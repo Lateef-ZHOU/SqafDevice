@@ -1,0 +1,28 @@
+file(GLOB_RECURSE headers "${CMAKE_CURRENT_SOURCE_DIR}/../include/*.h")
+add_executable(SqafDevice_smoke smoke.cpp)
+target_link_libraries(SqafDevice_smoke PRIVATE Lidar::SqafDevice LidarSqafDeviceplugin
+    LidarTaskUIplugin LidarUICoreplugin LidarChartCoreplugin)
+set(units)
+foreach(header IN LISTS headers)
+    file(RELATIVE_PATH relative "${CMAKE_CURRENT_SOURCE_DIR}/../include" "${header}")
+    string(MAKE_C_IDENTIFIER "${relative}" unit)
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${unit}.cpp" "#include <${relative}>\n")
+    list(APPEND units "${CMAKE_CURRENT_BINARY_DIR}/${unit}.cpp")
+endforeach()
+add_library(SqafDevice_headers OBJECT ${units})
+target_link_libraries(SqafDevice_headers PRIVATE Lidar::SqafDevice)
+foreach(target SqafDevice_headers SqafDevice_smoke)
+    if(MSVC)
+        target_compile_options(${target} PRIVATE /W4 /WX)
+    else()
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+endforeach()
+add_test(NAME SqafDevice_page COMMAND SqafDevice_smoke)
+set_tests_properties(SqafDevice_page PROPERTIES TIMEOUT 30
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QSG_RHI_BACKEND=null"
+    ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<TARGET_FILE_DIR:Qt6::Core>")
+if(WIN32)
+    set_property(TEST SqafDevice_page APPEND PROPERTY ENVIRONMENT_MODIFICATION
+        "PATH=path_list_prepend:$<TARGET_FILE_DIR:libserialport::libserialport>")
+endif()
