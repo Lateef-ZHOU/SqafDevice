@@ -27,6 +27,12 @@ Section {
                           root.settings.logMessage(qsTr("串口：%1").arg(root.parameters.serialPortOptions[i]))
                       } }
     }
+    Label {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        opacity: 0.6
+        text: root.parameters.description
+    }
     RowLayout {
         Layout.fillWidth: true
         Layout.topMargin: 4

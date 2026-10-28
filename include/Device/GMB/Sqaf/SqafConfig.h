@@ -15,6 +15,12 @@ namespace SqafConfig {
     static constexpr StopBits stopBits = StopBits::One; // libserialport 只收 1/2（无 1.5）
     static constexpr sp_parity parity = SP_PARITY_NONE;
 
+    // 连接和只读规格显示共用同一份构参，不保存运行状态。
+    [[nodiscard]] inline SerialParams serialParameters(const SerialPortInfo &port)
+    {
+        return {port, static_cast<int>(baudRate), dataBits, stopBits, parity};
+    }
+
     // ── 预置位 / 速度（范围是 Pelco-D 数据字节的协议事实）──────
     static constexpr int presetDefault = 1; // 预置位编号默认
     static constexpr int presetMin = 1;

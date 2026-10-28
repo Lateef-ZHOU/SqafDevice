@@ -1,5 +1,7 @@
 # SqafDevice
 
+2026-10-28 连接显示整理（用户定）：连接区显示波特率、数据位、停止位、校验与流控。显示和连接共用 SqafConfig::serialParameters 构参，不在 QML 硬编码第二份规格；仍仅允许选择端口。
+
 2026-10-28 用户定：连接区只选择串口；`open(serialPortIndex)` 从 SqafConfig 取得固定的 9600 baud、8 数据位、1 停止位、无校验、无流控参数。删除 QML 的线路参数选中项、下拉框及后端对应选项表，端口枚举与下标校验保持；点动速度和预置位等业务设置不变。
 
 本轮 Windows Qt 6.11.2 Release、qmllint 及既有页面冒烟 1/1 通过，无编译/QML 警告；证据为 `build/build-fixed-connection.log`、`build/test-fixed-connection.log`。未连接实物，不重复 Linux/协议全套，仅本地提交。
@@ -45,3 +47,5 @@ cmake --build build --config Release --target LidarSqafDevice_qmllint
 MIT，Copyright (c) 2026 周涛（ZHOU TAO）。Qt、libserialport、libpcap/Npcap 等依赖各自授权，MIT 不替代这些许可；详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。本仓库不包含第三方 SDK、运行库或驱动。
 
 CI：托管 Linux 自动验证；Windows 原生依赖使用预装 SDK/运行时的自托管入口，默认跳过不代表通过。本机 Windows 验证记录与主程序分仓记录一起保存。
+
+本轮本机验证（2026-10-28）：Windows Qt 6.11.2 Release 构建、CMake qmllint 和既有页面冒烟 1/1 通过；未连接实物。日志：build/build-connection-summary.log、build/test-connection-summary.log。

@@ -88,7 +88,13 @@ public:
             names << port.portName;
             tips << port.description;
         }
-        return {{"serialPortOptions", names}, {"serialPortTips", tips}, {"serialPortDefault", 0}};
+        const auto params = SqafConfig::serialParameters({});
+        const auto description = QStringLiteral("%1 baud · %2 数据位 · %3 停止位\n校验：%4 · 流控：%5")
+            .arg(params.baudRate).arg(toString(params.dataBits)).arg(toString(params.stopBits))
+            .arg(params.parity == SP_PARITY_NONE ? QStringLiteral("无") : toString(params.parity))
+            .arg(params.flowControl == SP_FLOWCONTROL_NONE ? QStringLiteral("无") : QString::number(params.flowControl));
+        return {{"serialPortOptions", names}, {"serialPortTips", tips}, {"serialPortDefault", 0},
+                {"description", description}};
     }
 
     Q_INVOKABLE QVariantMap controlParameters() const
@@ -189,8 +195,7 @@ public Q_SLOTS:
             Q_EMIT this->device().logSource().logMessage(QStringLiteral("串口选项下标无效，未连接"));
             return;
         }
-        this->device().open(SerialParams{ports.at(serialPortIndex), qToUnderlying(SqafConfig::baudRate),
-                                        SqafConfig::dataBits, SqafConfig::stopBits, SqafConfig::parity});
+        this->device().open(SqafConfig::serialParameters(ports.at(serialPortIndex)));
     }
     void close() { this->device().close(); }
 
