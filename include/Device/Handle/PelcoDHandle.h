@@ -1,6 +1,6 @@
 #pragma once
-#include <array>
 #include <memory>
+#include <boost/circular_buffer.hpp>
 #include <HandleBase.h>
 #include <SerialHandle.h>
 #include "Device/Handle/PelcoDProtocol.h"
@@ -14,35 +14,32 @@ public:
     {
         for (const char byte : chunk)
         {
-            bytes_[used_] = byte;
-            times_[used_] = at;
-            ++used_;
-            if (used_ < PelcoFrame::Size)
-                continue;
-            const QByteArray frame(bytes_.data(), PelcoFrame::Size);
-            if (PelcoFrame::kindOf(frame))
+            bytes_.push_back({byte, at});
+            while (bytes_.size() >= PelcoFrame::Size)
             {
-                const auto frameAt = times_[0];
-                used_ = 0;
-                deliver(frame, frameAt);
-            }
-            else
-            {
-                // 校验失败即滑动，不依赖下一次串口读取来继续检查已有字节。
-                for (int i = 1; i < PelcoFrame::Size; ++i)
+                QByteArray frame(PelcoFrame::Size, Qt::Uninitialized);
+                for (int i = 0; i < PelcoFrame::Size; ++i)
+                    frame[i] = bytes_[i].value;
+                if (!PelcoFrame::kindOf(frame))
                 {
-                    bytes_[i - 1] = bytes_[i];
-                    times_[i - 1] = times_[i];
+                    bytes_.pop_front(); // 帧头或校验和失败，只丢一个字节重新找帧。
+                    continue;
                 }
-                --used_;
+                const auto frameAt = bytes_.front().at;
+                bytes_.erase_begin(PelcoFrame::Size);
+                deliver(frame, frameAt);
             }
         }
     }
 
 private:
-    std::array<char, PelcoFrame::Size> bytes_{};
-    std::array<RxTime, PelcoFrame::Size> times_{};
-    int used_ = 0;
+    struct StampedByte
+    {
+        char value;
+        RxTime at;
+    };
+    // 每追加一个字节就处理已有完整帧；剩余不足七字节，不会覆盖尚未判定的帧。
+    boost::circular_buffer<StampedByte> bytes_{PelcoFrame::Size};
 };
 
 // Pelco-D 适配；串口机械收发来自独立库，设备命令与角度解释留在 Sqaf。

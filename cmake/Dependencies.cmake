@@ -1,4 +1,15 @@
 include(FetchContent)
+if(NOT TARGET Boost::circular_buffer)
+    find_package(Boost 1.88 QUIET CONFIG COMPONENTS circular_buffer)
+    if(NOT TARGET Boost::circular_buffer)
+        set(BOOST_INCLUDE_LIBRARIES ${BOOST_INCLUDE_LIBRARIES} circular_buffer)
+        FetchContent_Declare(boost
+            URL https://github.com/boostorg/boost/releases/download/boost-1.88.0/boost-1.88.0-cmake.tar.xz
+            URL_HASH SHA256=f48b48390380cfb94a629872346e3a81370dc498896f16019ade727ab72eb1ec
+            EXCLUDE_FROM_ALL)
+        FetchContent_MakeAvailable(boost)
+    endif()
+endif()
 set(HANDLECORE_WITH_SERIAL ON)
 if(NOT TARGET Lidar::HandleCore)
     FetchContent_Declare(lidar_handle_core
