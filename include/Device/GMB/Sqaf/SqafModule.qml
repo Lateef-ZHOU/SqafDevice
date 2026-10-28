@@ -14,10 +14,6 @@ ModulePage {
     function moveParameters() { return ({}) }
     // 官邸独持输入；分区只编辑这份状态，连接和发令时一次提交。
     property int serialPortIndex: internals.connectionParameters.serialPortDefault
-    property int baudRateIndex: internals.connectionParameters.baudRateDefault
-    property int dataBitsIndex: internals.connectionParameters.dataBitsDefault
-    property int stopBitsIndex: internals.connectionParameters.stopBitsDefault
-    property int parityIndex: internals.connectionParameters.parityDefault
     property int hSpeed: internals.controlParameters.speedDefault
     property int vSpeed: internals.controlParameters.speedDefault
     property int preset: internals.controlParameters.presetDefault

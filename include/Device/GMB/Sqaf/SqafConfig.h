@@ -9,7 +9,7 @@
 // 只留词汇与成帧内核；协议定死的字节事实就地注明出处。
 // ============================================================
 namespace SqafConfig {
-    // ── 串口默认档位（QML 官邸初始选中的下拉项；强类型词汇：三枚举 + sp_parity）──
+    // 型号固定串口规格；用户只选择端口，不编辑线路参数。
     static constexpr BaudRate baudRate = BaudRate::B9600;
     static constexpr DataBits dataBits = DataBits::D8;
     static constexpr StopBits stopBits = StopBits::One; // libserialport 只收 1/2（无 1.5）

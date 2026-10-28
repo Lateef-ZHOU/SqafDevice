@@ -1,5 +1,9 @@
 # SqafDevice
 
+2026-10-28 用户定：连接区只选择串口；`open(serialPortIndex)` 从 SqafConfig 取得固定的 9600 baud、8 数据位、1 停止位、无校验、无流控参数。删除 QML 的线路参数选中项、下拉框及后端对应选项表，端口枚举与下标校验保持；点动速度和预置位等业务设置不变。
+
+本轮 Windows Qt 6.11.2 Release、qmllint 及既有页面冒烟 1/1 通过，无编译/QML 警告；证据为 `build/build-fixed-connection.log`、`build/test-fixed-connection.log`。未连接实物，不重复 Linux/协议全套，仅本地提交。
+
 LiDAR 的独立官邸：具体 C++ 后端、Collector/协议/处理逻辑及其 QML 页面在同一仓库维护。初始代码来自 LiDAR_DataACQ master `5cc6d65`，后续维护记录见 [VALIDATION.md](VALIDATION.md)。
 
 ## 边界与接入

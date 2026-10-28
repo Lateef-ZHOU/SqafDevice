@@ -79,7 +79,7 @@ public:
         return SqafVocab::withinTravel(SqafMoveMeta{.pan = pan, .tilt = tilt});
     }
 
-    // 枚举与默认值按创建参数交入 QML；这里只保留串口的强类型选项表。
+    // 枚举端口交给 QML；线路规格由 SqafConfig 固定。
     Q_INVOKABLE QVariantMap connectionParameters() const
     {
         QStringList names, tips;
@@ -88,16 +88,7 @@ public:
             names << port.portName;
             tips << port.description;
         }
-        return {{"serialPortOptions", names}, {"serialPortTips", tips},
-                {"baudRateOptions", optionTexts(availableBaudRates())},
-                {"dataBitsOptions", optionTexts(availableDataBits())},
-                {"stopBitsOptions", optionTexts(availableStopBits())},
-                {"parityOptions", optionTexts(availableParities())},
-                {"serialPortDefault", 0},
-                {"baudRateDefault", indexIn(availableBaudRates(), SqafConfig::baudRate)},
-                {"dataBitsDefault", indexIn(availableDataBits(), SqafConfig::dataBits)},
-                {"stopBitsDefault", indexIn(availableStopBits(), SqafConfig::stopBits)},
-                {"parityDefault", indexIn(availableParities(), SqafConfig::parity)}};
+        return {{"serialPortOptions", names}, {"serialPortTips", tips}, {"serialPortDefault", 0}};
     }
 
     Q_INVOKABLE QVariantMap controlParameters() const
@@ -113,15 +104,6 @@ private:
     {
         static_assert(FinalDevice<SqafDevice, decltype(&SqafDevice::PreDestruction)>);
         GMBDevice::PreDestruction();
-    }
-
-    // 档位 → 它在表中的位置。indexOf 返 qsizetype，下标对外一律 int（QML 只认 int）。
-    // 找不到只可能是词汇层自相矛盾（默认值不在自己给的表里），取第一项——表里第一项照样是合法档。
-    template <typename T>
-    [[nodiscard]] static int indexIn(const QList<T> &options, const T &v)
-    {
-        const qsizetype i = options.indexOf(v);
-        return i < 0 ? 0 : static_cast<int>(i);
     }
 
     // 首用时枚举一次；选项次序与 QML 收到的表一致，插拔仍需重启程序。
@@ -194,8 +176,7 @@ private:
 public:
     using GMBDevice::setMounting;
 public Q_SLOTS:
-    void open(const int serialPortIndex, const int baudRateIndex, const int dataBitsIndex,
-              const int stopBitsIndex, const int parityIndex)
+    void open(const int serialPortIndex)
     {
         const auto &ports = serialPorts();
         if (ports.isEmpty())
@@ -203,18 +184,13 @@ public Q_SLOTS:
             Q_EMIT this->device().logSource().logMessage(QStringLiteral("没有可用串口，未连接"));
             return;
         }
-        if (serialPortIndex < 0 || serialPortIndex >= ports.size()
-            || baudRateIndex < 0 || baudRateIndex >= availableBaudRates().size()
-            || dataBitsIndex < 0 || dataBitsIndex >= availableDataBits().size()
-            || stopBitsIndex < 0 || stopBitsIndex >= availableStopBits().size()
-            || parityIndex < 0 || parityIndex >= availableParities().size())
+        if (serialPortIndex < 0 || serialPortIndex >= ports.size())
         {
             Q_EMIT this->device().logSource().logMessage(QStringLiteral("串口选项下标无效，未连接"));
             return;
         }
-        this->device().open(SerialParams{ports.at(serialPortIndex), qToUnderlying(availableBaudRates().at(baudRateIndex)),
-                                    availableDataBits().at(dataBitsIndex), availableStopBits().at(stopBitsIndex),
-                                    availableParities().at(parityIndex)});
+        this->device().open(SerialParams{ports.at(serialPortIndex), qToUnderlying(SqafConfig::baudRate),
+                                        SqafConfig::dataBits, SqafConfig::stopBits, SqafConfig::parity});
     }
     void close() { this->device().close(); }
 
