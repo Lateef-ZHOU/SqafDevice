@@ -4,7 +4,7 @@
 #include <boost/circular_buffer.hpp>
 #include <HandleBase.h>
 #include <SerialHandle.h>
-#include "Device/Handle/PelcoDProtocol.h"
+#include "PelcoDProtocol.h"
 
 // 只保留不足一帧的尾部。每个字节携其读取块的观测时刻，重同步后仍能找到帧头所在块。
 // RxTime 是软件读取观测值，不声称是硬件首字节到达时刻。

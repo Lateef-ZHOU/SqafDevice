@@ -11,11 +11,11 @@
 #include <QtEndian> // qFromBigEndian（常态灶解应答帧码字段）
 #include <QtGlobal>
 
-#include "Algorithm/Geometry/GimbalModel.h"                  // PanTiltModel（造斗收的目标位形）
-#include "Device/Handle/PelcoDHandle.h" // 连接机制 PelcoDHandle
-#include "Device/GMB/GMBDevice.h"               // 云台族两层（族基 GMBDeviceBase + 族层 GMBDevice）
-#include "Device/GMB/Sqaf/SqafConfig.h"      // 型号夹宪法
-#include "Device/GMB/Sqaf/SqafRunSide.h"     // 运行侧：词汇典 + 运动意图 + 意图 → 指令
+#include "GimbalModel.h"                  // PanTiltModel（造斗收的目标位形）
+#include "PelcoDHandle.h" // 连接机制 PelcoDHandle
+#include "GMBDevice.h"               // 云台族两层（族基 GMBDeviceBase + 族层 GMBDevice）
+#include "SqafConfig.h"      // 型号夹宪法
+#include "SqafRunSide.h"     // 运行侧：词汇典 + 运动意图 + 意图 → 指令
 
 // ============================================================
 // SqafDevice.h — sqaf 云台型号夹的**官邸**（词汇典 / 运动意图 / 意图 → 指令住 SqafRunSide.h）。

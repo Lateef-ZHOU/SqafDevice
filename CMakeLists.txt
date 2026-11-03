@@ -22,9 +22,8 @@ qt_add_qml_module(LidarSqafDevice STATIC URI Lidar.Sqaf VERSION 1.0
     IMPORT_PATH ${import_paths}
     SOURCES ${headers} QML_FILES ${views})
 add_library(Lidar::SqafDevice ALIAS LidarSqafDevice)
-target_include_directories(LidarSqafDevice PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include/Device/GMB/Sqaf")
-target_include_directories(LidarSqafDevice PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include/Device/Handle")
+target_include_directories(LidarSqafDevice PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(LidarSqafDevice PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(LidarSqafDevice PUBLIC Lidar::TaskUI Lidar::Serial Boost::circular_buffer)
 target_compile_features(LidarSqafDevice PUBLIC cxx_std_20)
 target_compile_definitions(LidarSqafDevice PUBLIC QT_NO_KEYWORDS)

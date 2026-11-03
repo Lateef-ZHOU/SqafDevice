@@ -1,12 +1,12 @@
 #pragma once
-#include "Device/GMB/GMBCollector.h"
+#include "GMBCollector.h"
 #include <cmath> // lround（角→码）
 #include <QByteArray>
 #include <QList>
 #include <QtGlobal>
 
-#include "Device/Handle/PelcoDProtocol.h" // PelcoFrame（帧定长 / 命令词长契约）
-#include "Device/GMB/Sqaf/SqafConfig.h"        // 型号夹宪法（作动范围 / 速度上限直读）
+#include "PelcoDProtocol.h" // PelcoFrame（帧定长 / 命令词长契约）
+#include "SqafConfig.h"        // 型号夹宪法（作动范围 / 速度上限直读）
 
 // ============================================================
 // SqafRunSide.h — sqaf 云台型号夹的**运行侧**：收发词汇典 + 运动意图 + 意图 → 指令。

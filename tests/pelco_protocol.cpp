@@ -1,6 +1,6 @@
 #include <functional>
 #include "CallbackHandle.h"
-#include "Device/Handle/PelcoDHandle.h"
+#include "PelcoDHandle.h"
 #include "FakeSerialPort.h"
 #include <array>
 #include <atomic>

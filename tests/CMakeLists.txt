@@ -5,7 +5,7 @@ target_link_libraries(SqafDevice_smoke PRIVATE Lidar::SqafDevice LidarSqafDevice
 
 # 直接编译生产 Handle 与固定依赖自带的串口替身，不打开实物串口。
 add_executable(SqafDevice_serial pelco_protocol.cpp
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/Device/Handle/PelcoDHandle.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/PelcoDHandle.h"
     "${lidar_handle_core_SOURCE_DIR}/tests/serial/FakeSerialPort.cpp")
 target_include_directories(SqafDevice_serial PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../include"
