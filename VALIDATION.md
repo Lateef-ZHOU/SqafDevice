@@ -25,3 +25,7 @@
 ## 2026-11-03 回调类型声明整理
 
 Pelco-D 成帧器和测试直接使用 std::function，删除对 DataCallback 的依赖；收发和成帧逻辑保持。Windows/MSVC/Qt 6.11.2 独立 Pelco-D 验证通过 16411 项检查，包含切分、回绕、坏帧同步、时间戳、千帧连续交付及重连；构建日志在主程序 build/virtual-protocol/build-callback-alias.log。Linux 桥接器直接使用本仓协议头，构建及 CTest 4/4 通过（virtual-upload-20261103/build-BridgeCore/callback-alias-{build,test}.log）；未打开真实串口。
+
+## 2026-11-03 清理无效构造继承声明（用户定）
+
+删除 PelcoDHandle 的 using SerialHandle::SerialHandle；基类没有需要继承的自定义构造函数。协议、发送线程、重连及关闭不变。通过主程序相邻源码覆盖完成 Windows/MSVC/Qt 6.11.2 Release 增量构建及八秒离屏冒烟；stderr 仅原有字体提示。HandleCore 本轮 CTest 6/6，包含串口测试。证据在 LiDAR_DataACQ/build/build-serial-cleanup.log、smoke-serial-cleanup.json；本轮未重跑独立 Pelco-D 专项、Linux 或实物验证，不推送。

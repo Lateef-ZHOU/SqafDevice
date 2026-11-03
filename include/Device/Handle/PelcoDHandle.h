@@ -48,7 +48,6 @@ class PelcoDHandle : public SerialHandle<PelcoDFramer>
 {
     Q_OBJECT
 public:
-    using SerialHandle::SerialHandle;
     ~PelcoDHandle() override = default;
 
 Q_SIGNALS:
