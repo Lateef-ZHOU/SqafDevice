@@ -39,7 +39,6 @@ class SqafCore final : public Device<PelcoDHandle, SqafCollector>
     Q_OBJECT
     Q_PROPERTY(QString displayName READ displayName CONSTANT)
     Q_PROPERTY(QString subtitle READ subtitle CONSTANT)
-    Q_PROPERTY(QObject *logSource READ logSourceObject CONSTANT)
     Q_PROPERTY(bool isOpen READ isOpen)
     Q_PROPERTY(bool isLocked READ isLocked)
     Q_PROPERTY(QString holder READ holder)
@@ -200,12 +199,12 @@ public Q_SLOTS:
         const auto &ports = serialPorts();
         if (ports.isEmpty())
         {
-            Q_EMIT this->device().logSource().logMessage(QStringLiteral("没有可用串口，未连接"));
+            Q_EMIT this->device().logMessage(QStringLiteral("没有可用串口，未连接"));
             return;
         }
         if (serialPortIndex < 0 || serialPortIndex >= ports.size())
         {
-            Q_EMIT this->device().logSource().logMessage(QStringLiteral("串口选项下标无效，未连接"));
+            Q_EMIT this->device().logMessage(QStringLiteral("串口选项下标无效，未连接"));
             return;
         }
         this->device().open(SqafConfig::serialParameters(ports.at(serialPortIndex)));
@@ -237,7 +236,7 @@ public Q_SLOTS:
     }
     bool setMounting(const double azimuth, const double elevation, const double roll)
     {
-        return GMBDeviceBase::setMounting(WorldModel(azimuth, elevation, roll), {});
+        return GMBDevice::setMounting(WorldModel(azimuth, elevation, roll), {});
     }
     bool issueStop() override { return this->device().send(SqafVocab::stopOf(), {}); }
     bool moveLeftUp(const int hSpeed, const int vSpeed) { return issueMove(SqafVocab::LeftUp, speedCode(hSpeed), speedCode(vSpeed)); }
@@ -269,7 +268,7 @@ private:
     {
         if (!SqafVocab::withinTravel(meta))
         {
-            Q_EMIT this->device().logSource().logMessage(QStringLiteral("云台运动参数超出本云台行程（水平 %1~%2°、俯仰 %3~%4°、速度 ≤ %5），未下发")
+            Q_EMIT this->device().logMessage(QStringLiteral("云台运动参数超出本云台行程（水平 %1~%2°、俯仰 %3~%4°、速度 ≤ %5），未下发")
                                 .arg(SqafConfig::panMin).arg(SqafConfig::panMax).arg(SqafConfig::tiltMin)
                                 .arg(SqafConfig::tiltMax).arg(SqafConfig::speedMax));
             return false;
@@ -282,7 +281,7 @@ private:
     {
         if (preset >= SqafConfig::presetMin && preset <= SqafConfig::presetMax)
             return true;
-        Q_EMIT this->device().logSource().logMessage(QStringLiteral("预置位编号超出范围（%1~%2），未下发")
+        Q_EMIT this->device().logMessage(QStringLiteral("预置位编号超出范围（%1~%2），未下发")
                                          .arg(SqafConfig::presetMin).arg(SqafConfig::presetMax));
         return false;
     }

@@ -57,7 +57,7 @@ ModulePage {
         readonly property var controlParameters: device.controlParameters()
     }
     Connections {
-        target: internals.device.device.logSource
+        target: internals.device.device
         function onLogMessage(text): void { root.logMessage(text) }
     }
 }
