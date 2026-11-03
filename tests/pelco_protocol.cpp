@@ -120,7 +120,7 @@ int main(int argc, char **argv)
         const auto count = [&] { const std::lock_guard lock(gate); return received.size(); };
         QStringList logs;
         QObject::connect(&handle, &PelcoDHandle::logMessage, &app, [&](const QString &text) { logs.push_back(text); });
-        require(handle.start(SerialParams{{"controlled", {}}}) && until([&] { return handle.isOpen(); }), "production Pelco open failed");
+        require(handle.open(SerialParams{{"controlled", {}}}) && until([&] { return handle.isOpen(); }), "production Pelco open failed");
         enqueue(both);
         require(until([&] { return count() == 2; }), "production burst needs another input");
         QByteArray burst;
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
         require(until([&] { return opens() == 2 && handle.isOpen(); }), "production reconnect failed");
         enqueue(a.mid(3) + b);
         require(until([&] { return count() == 1003; }), "partial frame leaked across reconnect");
-        handle.stop();
+        handle.close();
         require(received.back() == b && worker && typedTime, "production receive contract changed");
     }
     require(livePorts() == 0 && closes() == 2, "production destructor did not release connections");
