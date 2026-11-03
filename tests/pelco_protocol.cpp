@@ -1,3 +1,4 @@
+#include <functional>
 #include "CallbackHandle.h"
 #include "Device/Handle/PelcoDHandle.h"
 #include "FakeSerialPort.h"
@@ -36,7 +37,7 @@ int main(int argc, char **argv)
         std::vector<QByteArray> frames;
         std::vector<RxTime> times;
         std::array<RxTime, 2> expected{};
-        const DataCallback collect = [&](const QByteArray &frame, RxTime at) { frames.push_back(frame); times.push_back(at); };
+        const std::function<void(const QByteArray &, RxTime)> collect = [&](const QByteArray &frame, RxTime at) { frames.push_back(frame); times.push_back(at); };
         int start = 0;
         for (int end = 1; end <= both.size(); ++end)
         {
@@ -53,7 +54,7 @@ int main(int argc, char **argv)
     {
         PelcoDFramer framer;
         std::vector<QByteArray> frames;
-        const DataCallback collect = [&](const QByteArray &frame, RxTime) { frames.push_back(frame); };
+        const std::function<void(const QByteArray &, RxTime)> collect = [&](const QByteArray &frame, RxTime) { frames.push_back(frame); };
         QByteArray bad = a; bad[6] = 0;
         framer.feed(QByteArray(4096, 'x') + bad + a + b.first(3), origin, collect);
         require(frames == std::vector<QByteArray>{a}, "noise/checksum/tail handling failed");
@@ -66,7 +67,7 @@ int main(int argc, char **argv)
         PelcoDFramer framer;
         std::vector<QByteArray> frames;
         std::vector<RxTime> times;
-        const DataCallback collect = [&](const QByteArray &frame, RxTime at) {
+        const std::function<void(const QByteArray &, RxTime)> collect = [&](const QByteArray &frame, RxTime at) {
             frames.push_back(frame); times.push_back(at);
         };
         framer.feed(QByteArray::fromHex("ff0000"), origin, collect);
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
     {
         PelcoDFramer framer;
         std::vector<QByteArray> frames;
-        const DataCallback collect = [&](const QByteArray &frame, RxTime) { frames.push_back(frame); };
+        const std::function<void(const QByteArray &, RxTime)> collect = [&](const QByteArray &frame, RxTime) { frames.push_back(frame); };
         framer.feed(QByteArray(offset, 'x') + embeddedSync + checksumSync + a + b, origin, collect);
         require(frames == std::vector<QByteArray>{embeddedSync, checksumSync, a, b},
                 "physical wrap or payload/checksum FF altered frame boundaries");
@@ -97,7 +98,7 @@ int main(int argc, char **argv)
     {
         PelcoDFramer framer;
         std::vector<QByteArray> frames;
-        const DataCallback collect = [&](const QByteArray &frame, RxTime) { frames.push_back(frame); };
+        const std::function<void(const QByteArray &, RxTime)> collect = [&](const QByteArray &frame, RxTime) { frames.push_back(frame); };
         QByteArray wrongHead = a; wrongHead[0] = 0;
         framer.feed(wrongHead, origin, collect);
         require(frames.empty(), "checksum-only candidate with bad header accepted");

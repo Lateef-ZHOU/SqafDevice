@@ -15,3 +15,7 @@
 - 本轮复用先前已下载并核验的 Boost 1.88.0 源码，其他依赖按固定提交拉取。配置阶段保留环境原有的 Qt 私有 API、可选 Vulkan 头缺失提示；Windows 另有未安装 QtTaskTree 引起的可选 QML 插件提示，未影响配置、构建和页面验证。
 
 本次只在 SqafDevice 本地提交，未推送，未更新主程序固定依赖、simonly 或旧 sim-ui。
+
+## 2026-11-03 回调类型声明整理
+
+Pelco-D 成帧器和测试直接使用 std::function，删除对 DataCallback 的依赖；收发和成帧逻辑保持。Windows/MSVC/Qt 6.11.2 独立 Pelco-D 验证通过 16411 项检查，包含切分、回绕、坏帧同步、时间戳、千帧连续交付及重连；构建日志在主程序 build/virtual-protocol/build-callback-alias.log。Linux 桥接器直接使用本仓协议头，构建及 CTest 4/4 通过（virtual-upload-20261103/build-BridgeCore/callback-alias-{build,test}.log）；未打开真实串口。

@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <memory>
 #include <boost/circular_buffer.hpp>
 #include <HandleBase.h>
@@ -10,7 +11,7 @@
 class PelcoDFramer
 {
 public:
-    void feed(const QByteArray &chunk, const RxTime at, const DataCallback &deliver)
+    void feed(const QByteArray &chunk, const RxTime at, const std::function<void(const QByteArray &, RxTime)> &deliver)
     {
         for (const char byte : chunk)
         {
