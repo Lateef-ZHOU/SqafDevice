@@ -107,13 +107,7 @@ public:
             names << port.portName;
             tips << port.description;
         }
-        const auto params = SqafConfig::serialParameters({});
-        const auto description = QStringLiteral("%1 baud · %2 数据位 · %3 停止位\n校验：%4 · 流控：%5")
-            .arg(params.baudRate).arg(toString(params.dataBits)).arg(toString(params.stopBits))
-            .arg(params.parity == SP_PARITY_NONE ? QStringLiteral("无") : toString(params.parity))
-            .arg(params.flowControl == SP_FLOWCONTROL_NONE ? QStringLiteral("无") : QString::number(params.flowControl));
-        return {{"serialPortOptions", names}, {"serialPortTips", tips}, {"serialPortDefault", 0},
-                {"description", description}};
+        return {{"serialPortOptions", names}, {"serialPortTips", tips}, {"serialPortDefault", 0}};
     }
 
     Q_INVOKABLE QVariantMap controlParameters() const

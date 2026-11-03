@@ -1,5 +1,11 @@
 # 验证记录
 
+## 2026-11-03：删除串口连接规格说明（用户定）
+
+删除页面的波特率、数据位、停止位、校验和流控说明及对应 C++ 字符串组装接口，只保留端口选择与连接/断开。型号固定构参、协议、发送和关闭行为不变。
+
+通过主程序本地源码覆盖验证：Windows 增量 Release 构建、LidarSqafDevice_qmllint 和 RayshiningDevice_qmllint 均通过，无编译/QML 诊断；主程序八秒离屏存活，仅有既有字体提示。证据位于 LiDAR_DataACQ/build/build-serial-ui.log、smoke-serial-ui.json。主程序当前装配 UDP 激光器，串口页面本轮验证为编译与静态 QML 检查，未做真实串口或 Linux 验证。仅本地提交，未推送。
+
 ## 2026-10-28：Pelco-D 改用环形容器（用户定）
 
 - 成帧器使用 `boost::circular_buffer<StampedByte>`，容量 7、初始长度 0。字节和读取时间绑定存放，删除两组数组、实际长度成员与坏帧时的逐元素搬移。
