@@ -33,11 +33,30 @@
 //      本台行程取 SqafConfig::pan* / tilt*，预览与发令共用型号判据，输入框随模板接收范围；
 //   ④ 型号事实按值交给自己的 QML 官邸，页面内容和分区顺序由 QML 决定。
 // ============================================================
+// Qt 元对象末端：Handle 与 Device 共用一个 QObject；析构先等上传退出。
+class SqafCore final : public Device<PelcoDHandle, SqafCollector>
+{
+    Q_OBJECT
+    Q_PROPERTY(QString displayName READ displayName CONSTANT)
+    Q_PROPERTY(QString subtitle READ subtitle CONSTANT)
+    Q_PROPERTY(QObject *logSource READ logSourceObject CONSTANT)
+    Q_PROPERTY(bool isOpen READ isOpen)
+    Q_PROPERTY(bool isLocked READ isLocked)
+    Q_PROPERTY(QString holder READ holder)
+public:
+    using Device::Device;
+    ~SqafCore() override { PreDestruction(); }
+Q_SIGNALS:
+    void lockChanged(HandleCore::ResourcePhase phase) override;
+private:
+    void PreDestruction() noexcept final { Device::PreDestruction(); }
+};
+
 class SqafDevice final
 #ifdef Q_MOC_RUN
     : public GMBDeviceBase // 模板层继承的族级元对象。
 #else
-    : public GMBDevice<PelcoDHandle, SqafCollector>
+    : public GMBDevice<SqafCore>
 #endif
 {
     Q_OBJECT

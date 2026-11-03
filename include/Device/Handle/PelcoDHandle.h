@@ -43,12 +43,12 @@ private:
 };
 
 // Pelco-D 适配；串口机械收发来自独立库，设备命令与角度解释留在 Sqaf。
-class PelcoDHandle final : public SerialHandle<PelcoDFramer>
+class PelcoDHandle : public SerialHandle<PelcoDFramer>
 {
     Q_OBJECT
 public:
     using SerialHandle::SerialHandle;
-    ~PelcoDHandle() override { stop(); }
+    ~PelcoDHandle() override = default;
 
 Q_SIGNALS:
     void connectionChanged(HandleCore::ResourcePhase connected) override;

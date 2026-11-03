@@ -1,3 +1,4 @@
+#include "CallbackHandle.h"
 #include "Device/Handle/PelcoDHandle.h"
 #include "FakeSerialPort.h"
 #include <array>
@@ -110,7 +111,7 @@ int main(int argc, char **argv)
     std::vector<QByteArray> received;
     std::atomic<bool> worker{true}, typedTime{true};
     {
-        PelcoDHandle handle([&](const QByteArray &frame, RxTime at) {
+        CallbackHandle<PelcoDHandle> handle([&](const QByteArray &frame, RxTime at) {
             worker = worker && QThread::currentThread() != app.thread();
             typedTime = typedTime && at != RxTime{};
             const std::lock_guard lock(gate); received.push_back(frame);

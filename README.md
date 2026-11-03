@@ -1,5 +1,7 @@
 # SqafDevice
 
+2026-11-03 上传接口：官邸仍拥有唯一具体 Core；Core 继承 `Device<HandleT, CollectorT>`，Device 直接继承 Handle 并重写 onData。Core 只提供 Qt 属性、锁信号与末端预析构；不增设上传回调、状态缓存或逐包信号转发。协议、Collector 与 UI 逻辑保持。
+
 2026-10-28 连接显示整理（用户定）：连接区显示波特率、数据位、停止位、校验与流控。显示和连接共用 SqafConfig::serialParameters 构参，不在 QML 硬编码第二份规格；仍仅允许选择端口。
 
 2026-10-28 用户定：连接区只选择串口；`open(serialPortIndex)` 从 SqafConfig 取得固定的 9600 baud、8 数据位、1 停止位、无校验、无流控参数。删除 QML 的线路参数选中项、下拉框及后端对应选项表，端口枚举与下标校验保持；点动速度和预置位等业务设置不变。
@@ -53,3 +55,6 @@ CI：托管 Linux 自动验证；Windows 原生依赖使用预装 SDK/运行时�
 ## 资源阶段通知（2026-11-02）
 
 连接采用 HandleCore 的 `connectionChanged(ResourcePhase)`；主动关闭前在所属线程同步发 `AboutToRelease`，完成事件用于回读现状。页面借出已有 `deviceState` 机制对象，不再保存 isOpen/isLocked/holder 的 QML 转交属性；标签通过连接/锁完成阶段回读，不恢复通用 statusChanged。固定依赖已同步；本轮提交尚未推送，验证使用显式本地源码覆盖。
+
+
+2026-11-03 验证：Windows Qt 6.11.2 主程序 Release 编译、15 组 QML 检查、跨官邸生命周期和三任务回归 7/7 通过。接口联调使用相邻源码覆盖，新依赖固定为本地提交，尚未推送；未连接实物设备或更新板卡。
