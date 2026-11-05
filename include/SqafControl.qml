@@ -40,9 +40,8 @@ Section {
         }
     }
 
-    Label {
+    Subheading {
         text: qsTr("方向点动")
-        font.bold: true
     }
 
     // Grid（不是 GridLayout）：格子尺寸自己说了算，整块居中摆
@@ -128,9 +127,8 @@ Section {
         }
     }
 
-    Label {
+    Subheading {
         text: qsTr("转台指令")
-        font.bold: true
         Layout.topMargin: 6
     }
 
