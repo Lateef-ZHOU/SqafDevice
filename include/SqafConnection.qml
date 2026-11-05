@@ -27,19 +27,15 @@ Section {
                           root.settings.logMessage(qsTr("串口：%1").arg(root.parameters.serialPortOptions[i]))
                       } }
     }
-    RowLayout {
-        Layout.fillWidth: true
+    DoubleButtonRow {
         Layout.topMargin: 4
-        spacing: 8
-        Button {
-            Layout.fillWidth: true
+        firstAction: Action {
             text: qsTr("连接")
-            onClicked: root.device.open(root.settings.serialPortIndex)
+            onTriggered: root.device.open(root.settings.serialPortIndex)
         }
-        Button {
-            Layout.fillWidth: true
+        secondAction: Action {
             text: qsTr("断开")
-            onClicked: root.device.close()
+            onTriggered: root.device.close()
         }
     }
 }
