@@ -148,63 +148,59 @@ Section {
         }
     }
 
-    ColumnLayout {
-        Layout.fillWidth: true
-        spacing: FormStyle.rowSpacing
-        DoubleButtonRow {
-            firstAction: Action {
-                text: qsTr("设置预置位")
-                onTriggered: if (root.device.storePreset(root.settings.preset))
-                    root.settings.logMessage(qsTr("已下发：设置预置位 %1").arg(root.settings.preset))
-            }
-
-            secondAction: Action {
-                text: qsTr("调用预置位")
-                onTriggered: if (root.device.recallPreset(root.settings.preset))
-                    root.settings.logMessage(qsTr("已下发：调用预置位 %1").arg(root.settings.preset))
-            }
+    DoubleButtonRow {
+        firstAction: Action {
+            text: qsTr("设置预置位")
+            onTriggered: if (root.device.storePreset(root.settings.preset))
+                root.settings.logMessage(qsTr("已下发：设置预置位 %1").arg(root.settings.preset))
         }
-        DoubleButtonRow {
 
-            firstAction: Action {
-                text: qsTr("开启自检")
-                onTriggered: if (root.device.enableSelfCheck())
-                    root.settings.logMessage(qsTr("已下发：开启自检"))
-            }
-
-            secondAction: Action {
-                text: qsTr("关闭自检")
-                onTriggered: if (root.device.disableSelfCheck())
-                    root.settings.logMessage(qsTr("已下发：关闭自检"))
-            }
+        secondAction: Action {
+            text: qsTr("调用预置位")
+            onTriggered: if (root.device.recallPreset(root.settings.preset))
+                root.settings.logMessage(qsTr("已下发：调用预置位 %1").arg(root.settings.preset))
         }
-        DoubleButtonRow {
+    }
+    DoubleButtonRow {
 
-            firstAction: Action {
-                text: qsTr("角度实时回传")
-                onTriggered: if (root.device.enableAngleRealtime())
-                    root.settings.logMessage(qsTr("已下发：开启角度实时回传"))
-            }
-
-            secondAction: Action {
-                text: qsTr("角度手动查询")
-                onTriggered: if (root.device.setAngleQueryMode())
-                    root.settings.logMessage(qsTr("已下发：角度改为手动查询"))
-            }
+        firstAction: Action {
+            text: qsTr("开启自检")
+            onTriggered: if (root.device.enableSelfCheck())
+                root.settings.logMessage(qsTr("已下发：开启自检"))
         }
-        DoubleButtonRow {
 
-            firstAction: Action {
-                text: qsTr("查询水平角")
-                onTriggered: if (root.device.queryPan())
-                    root.settings.logMessage(qsTr("已下发：查询水平角"))
-            }
+        secondAction: Action {
+            text: qsTr("关闭自检")
+            onTriggered: if (root.device.disableSelfCheck())
+                root.settings.logMessage(qsTr("已下发：关闭自检"))
+        }
+    }
+    DoubleButtonRow {
 
-            secondAction: Action {
-                text: qsTr("查询俯仰角")
-                onTriggered: if (root.device.queryTilt())
-                    root.settings.logMessage(qsTr("已下发：查询俯仰角"))
-            }
+        firstAction: Action {
+            text: qsTr("角度实时回传")
+            onTriggered: if (root.device.enableAngleRealtime())
+                root.settings.logMessage(qsTr("已下发：开启角度实时回传"))
+        }
+
+        secondAction: Action {
+            text: qsTr("角度手动查询")
+            onTriggered: if (root.device.setAngleQueryMode())
+                root.settings.logMessage(qsTr("已下发：角度改为手动查询"))
+        }
+    }
+    DoubleButtonRow {
+
+        firstAction: Action {
+            text: qsTr("查询水平角")
+            onTriggered: if (root.device.queryPan())
+                root.settings.logMessage(qsTr("已下发：查询水平角"))
+        }
+
+        secondAction: Action {
+            text: qsTr("查询俯仰角")
+            onTriggered: if (root.device.queryTilt())
+                root.settings.logMessage(qsTr("已下发：查询俯仰角"))
         }
     }
 }

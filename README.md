@@ -100,3 +100,10 @@ Windows 主程序增量构建和八秒离屏冒烟通过；本仓测试调用已
 串口连接区删除 actionTopMargin=4，选择行与按钮行使用 ConnectionSection 的统一间距。其他布局和方向键保持。
 
 主程序 Windows Release 增量构建、八秒桌面冒烟及四窗口装配检查通过；运行 stderr 为空，保留既有 CDL5/Qt 生成代码 C4702 编译警告。仅本地验证，未连接硬件、未推送。
+
+
+### 2026-11-05 按钮气泡与布局复用
+
+预置位、自检、回传模式与角度查询的四排 DoubleButtonRow 直接交给 Section 排列，删除多余 ColumnLayout。方向键、按钮动作及既定组间距保持。
+
+主程序Windows Release增量构建、八秒桌面冒烟与四窗口装配检查通过，运行stderr为空。未连接硬件，仅本地提交、未推送。
