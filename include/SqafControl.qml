@@ -136,7 +136,6 @@ Section {
         label: qsTr("预置位")
         IntField {
             Layout.fillWidth: true
-            Layout.preferredWidth: 80
             minimum: root.parameters.presetMin
             maximum: root.parameters.presetMax
             value: root.settings.preset
