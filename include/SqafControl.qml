@@ -91,7 +91,7 @@ Section {
                       } }
     }
 
-    Label { text: qsTr("云台指令"); font.bold: true; Layout.topMargin: 6 }
+    Label { text: qsTr("转台指令"); font.bold: true; Layout.topMargin: 6 }
 
     FieldRow {
         label: qsTr("预置位")

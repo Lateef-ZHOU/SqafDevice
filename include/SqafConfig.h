@@ -29,7 +29,7 @@ namespace SqafConfig {
     static constexpr int speedMin = 1;
     static constexpr int speedMax = 63;     // Pelco-D 速度字节上限 0x3F（协议定死）
 
-    // ── 轴作动范围（°）：限位真身在电机，此处是"这台云台"的数值事实──
+    // ── 轴作动范围（°）：限位真身在电机，此处是"这台转台"的数值事实──
     // 消费者：官邸交入 QML 模板的输入范围，以及 SqafVocab::withinTravel 的行程检查（超出即不造斗 / 不发）。
     //  PanTiltModel 的范围是双轴云台的全部位形（水平一周 × 俯仰 ±180°），不冒充设备行程——两者本就不是一回事。）
     // 俯仰 0°~90° **有实测依据**（用户用方向键连动试过）：转到 0° 与 90° 都会自己停下，像是硬限位。

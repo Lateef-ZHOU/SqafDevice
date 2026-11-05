@@ -82,7 +82,7 @@ public:
 
     ~SqafDevice() override { PreDestruction(); }
 
-    explicit SqafDevice(QObject *parent) : GMBDevice(QStringLiteral("视强云台"), QStringLiteral("串口 · Pelco-D"), parent)
+    explicit SqafDevice(QObject *parent) : GMBDevice(QStringLiteral("转台·亚安"), QStringLiteral("YS3081"), parent)
     {
         setObjectName(QStringLiteral("Sqaf")); // ASCII 标识：落盘会话目录名用
     }
@@ -267,7 +267,7 @@ private:
     {
         if (!SqafVocab::withinTravel(meta))
         {
-            Q_EMIT this->device().logMessage(QStringLiteral("云台运动参数超出本云台行程（水平 %1~%2°、俯仰 %3~%4°、速度 ≤ %5），未下发")
+            Q_EMIT this->device().logMessage(QStringLiteral("转台运动参数超出本转台行程（水平 %1~%2°、俯仰 %3~%4°、速度 ≤ %5），未下发")
                                 .arg(SqafConfig::panMin).arg(SqafConfig::panMax).arg(SqafConfig::tiltMin)
                                 .arg(SqafConfig::tiltMax).arg(SqafConfig::speedMax));
             return false;
