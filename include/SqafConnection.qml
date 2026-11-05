@@ -30,7 +30,6 @@ ConnectionSection {
         }
     }
 
-    actionTopMargin: 4
     firstAction: Action {
         text: qsTr("连接")
         onTriggered: root.device.open(root.settings.serialPortIndex)

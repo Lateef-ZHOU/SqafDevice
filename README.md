@@ -93,3 +93,10 @@ Windows 主程序增量构建和八秒离屏冒烟通过；本仓测试调用已
 串口连接区使用 UICore ConnectionSection，小标题使用 Subheading；保留方向键、原有组间距与型号连接动作。 本轮仅本地整理，未推送；Windows 集成验证记录见主程序维护操作。
 
 2026-11-05 输入宽度整理：预置位输入删除局部 preferredWidth=80，由 FieldRow 分配空间。方向键、特殊布局和既定组间距、命令与校验保持。同步 TaskCore 本地依赖；主程序 Windows 增量构建及八秒冒烟通过，未推送。
+
+
+### 2026-11-05 连接间距、累积默认值与径向风页面整理
+
+串口连接区删除 actionTopMargin=4，选择行与按钮行使用 ConnectionSection 的统一间距。其他布局和方向键保持。
+
+主程序 Windows Release 增量构建、八秒桌面冒烟及四窗口装配检查通过；运行 stderr 为空，保留既有 CDL5/Qt 生成代码 C4702 编译警告。仅本地验证，未连接硬件、未推送。
