@@ -261,9 +261,9 @@ public Q_SLOTS:
 private:
 
     // 本台的角度定位没有速度字段（Pelco-D 扩展命令只带角度），故 meta 只填两轴角度。
-    bool issueGoTo(const GMBMoveParameters &parameters) override
+    bool issueGoTo(const std::optional<GMBMoveParameters> &parameters) override
     {
-        return issue(SqafMoveMeta{.pan = parameters.target.pan(), .tilt = parameters.target.tilt()});
+        return parameters && issue(SqafMoveMeta{.pan = parameters->target.pan(), .tilt = parameters->target.tilt()});
     }
 
     // 实际发令时钳制使用轴的速度，再缩窄为协议字节；未使用的轴由调用处传 0。
