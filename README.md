@@ -1,5 +1,7 @@
 # SqafDevice
 
+2026-11-09 用户定：设备与云台族合为一个对象：末端官邸直接继承 `GMBDevice<HandleT, CollectorT>`（它同时继承 `Device<HandleT, CollectorT>` 与纯 C++ 的 `GMBDeviceBase`），删除中间 Core 类与 `device_` 指针；唯一 QObject 来自 Handle。末端声明 displayName/subtitle/isOpen/holder/mounting/slipRing 属性及 lockChanged/mountingChanged/anglesReady 信号，析构首句预析构只走 Device 链。页面 `family` 改为 `QtObject`，`deviceState`/日志直接指向设备本身，删除 `device.device` 自引用。页面测试新增 family 即后端本身、可交叉转换到族基的断言。
+
 2026-11-03 上传接口：官邸仍拥有唯一具体 Core；Core 继承 `Device<HandleT, CollectorT>`，Device 直接继承 Handle 并重写 onData。Core 只提供 Qt 属性、锁信号与末端预析构；不增设上传回调、状态缓存或逐包信号转发。协议、Collector 与 UI 逻辑保持。
 
 2026-11-03 连接显示整理（用户定）：删除串口线路规格说明及后端字符串组装，连接区只保留端口选择和连接/断开。固定线路参数仍由 SqafConfig::serialParameters 构参，不因显示删减而改变。

@@ -33,31 +33,21 @@
 //      本台行程取 SqafConfig::pan* / tilt*，预览与发令共用型号判据，输入框随模板接收范围；
 //   ④ 型号事实按值交给自己的 QML 官邸，页面内容和分区顺序由 QML 决定。
 // ============================================================
-// Qt 元对象末端：Handle 与 Device 共用一个 QObject；析构先等上传退出。
-class SqafCore final : public Device<PelcoDHandle, SqafCollector>
+// Qt 元对象末端：Handle、Device 与云台族共用这一个 QObject；析构首句先停收包再拆派生状态。
+class SqafDevice final
+#ifdef Q_MOC_RUN
+    : public PelcoDHandle // 元对象基类：唯一 QObject 来自 Handle，模板层不加 Q_OBJECT。
+#else
+    : public GMBDevice<PelcoDHandle, SqafCollector>
+#endif
 {
     Q_OBJECT
     Q_PROPERTY(QString displayName MEMBER displayName CONSTANT)
     Q_PROPERTY(QString subtitle MEMBER subtitle CONSTANT)
     Q_PROPERTY(bool isOpen READ isOpen)
     Q_PROPERTY(QVariant holder READ qmlHolder)
-public:
-    using Device::Device;
-    ~SqafCore() override { PreDestruction(); }
-Q_SIGNALS:
-    void lockChanged(HandleCore::ResourcePhase phase) override;
-private:
-    void PreDestruction() noexcept final { Device::PreDestruction(); }
-};
-
-class SqafDevice final
-#ifdef Q_MOC_RUN
-    : public GMBDeviceBase // 模板层继承的族级元对象。
-#else
-    : public GMBDevice<SqafCore>
-#endif
-{
-    Q_OBJECT
+    Q_PROPERTY(WorldModel mounting READ mounting NOTIFY mountingChanged)
+    Q_PROPERTY(bool slipRing READ hasSlipRing CONSTANT)
     QML_ELEMENT
     QML_ATTACHED(SqafDevice)
     QML_UNCREATABLE("由对应 QML 官邸创建和拥有")
@@ -95,6 +85,13 @@ public:
     {
         return SqafVocab::withinTravel(SqafMoveMeta{.pan = pan, .tilt = tilt});
     }
+
+Q_SIGNALS:
+    void lockChanged(HandleCore::ResourcePhase phase) override;
+    void mountingChanged(const WorldModel &mounting) override;
+    void anglesReady(RxTime at, double pan, double tilt, double azimuth, double elevation) override;
+
+public:
 
     // 枚举端口交给 QML；线路规格由 SqafConfig 固定。
     Q_INVOKABLE QVariantMap connectionParameters() const
@@ -198,35 +195,35 @@ public Q_SLOTS:
         const auto &ports = serialPorts();
         if (ports.isEmpty())
         {
-            Q_EMIT this->device().logMessage(QStringLiteral("没有可用串口，未连接"));
+            Q_EMIT this->logMessage(QStringLiteral("没有可用串口，未连接"));
             return;
         }
         if (serialPortIndex < 0 || serialPortIndex >= ports.size())
         {
-            Q_EMIT this->device().logMessage(QStringLiteral("串口选项下标无效，未连接"));
+            Q_EMIT this->logMessage(QStringLiteral("串口选项下标无效，未连接"));
             return;
         }
-        this->device().open(SqafConfig::serialParameters(ports.at(serialPortIndex)));
+        PelcoDHandle::open(SqafConfig::serialParameters(ports.at(serialPortIndex)));
     }
-    void close() { this->device().close(); }
+    void close() { PelcoDHandle::close(); }
 
     // 云台指令直发：Device::send 验锁，成功文案由 QML 记录。
     bool storePreset(const int preset)
     {
         if (!validPreset(preset)) return false;
-        return this->device().send({SqafVocab::buildSetPreset(static_cast<quint8>(preset))}, {});
+        return this->send({SqafVocab::buildSetPreset(static_cast<quint8>(preset))}, {});
     }
     bool recallPreset(const int preset)
     {
         if (!validPreset(preset)) return false;
-        return this->device().send({SqafVocab::buildCallPreset(static_cast<quint8>(preset))}, {});
+        return this->send({SqafVocab::buildCallPreset(static_cast<quint8>(preset))}, {});
     }
-    bool enableSelfCheck() { return this->device().send({SqafVocab::buildSelfCheckOn()}, {}); }
-    bool disableSelfCheck() { return this->device().send({SqafVocab::buildSelfCheckOff()}, {}); }
-    bool enableAngleRealtime() { return this->device().send({SqafVocab::buildAngleRealtimeOn()}, {}); }
-    bool setAngleQueryMode() { return this->device().send({SqafVocab::buildAngleQueryMode()}, {}); }
-    bool queryPan() { return this->device().send({SqafVocab::buildQueryPan()}, {}); }
-    bool queryTilt() { return this->device().send({SqafVocab::buildQueryTilt()}, {}); }
+    bool enableSelfCheck() { return this->send({SqafVocab::buildSelfCheckOn()}, {}); }
+    bool disableSelfCheck() { return this->send({SqafVocab::buildSelfCheckOff()}, {}); }
+    bool enableAngleRealtime() { return this->send({SqafVocab::buildAngleRealtimeOn()}, {}); }
+    bool setAngleQueryMode() { return this->send({SqafVocab::buildAngleQueryMode()}, {}); }
+    bool queryPan() { return this->send({SqafVocab::buildQueryPan()}, {}); }
+    bool queryTilt() { return this->send({SqafVocab::buildQueryTilt()}, {}); }
 
     // Qt 入口接收页面参数；成功只返回结果，文案由 QML 生成。标定三个角一次提交。
     bool issueGoTo(const double pan, const double tilt, const QVariantMap &parameters)
@@ -237,7 +234,7 @@ public Q_SLOTS:
     {
         return GMBDevice::setMounting(WorldModel(azimuth, elevation, roll), {});
     }
-    bool issueStop() override { return this->device().send(SqafVocab::stopOf(), {}); }
+    bool issueStop() override { return this->send(SqafVocab::stopOf(), {}); }
     bool moveLeftUp(const int hSpeed, const int vSpeed) { return issueMove(SqafVocab::LeftUp, speedCode(hSpeed), speedCode(vSpeed)); }
     bool moveUp(const int vSpeed) { return issueMove(SqafVocab::Up, 0, speedCode(vSpeed)); }
     bool moveRightUp(const int hSpeed, const int vSpeed) { return issueMove(SqafVocab::RightUp, speedCode(hSpeed), speedCode(vSpeed)); }
@@ -267,12 +264,12 @@ private:
     {
         if (!SqafVocab::withinTravel(meta))
         {
-            Q_EMIT this->device().logMessage(QStringLiteral("转台运动参数超出本转台行程（水平 %1~%2°、俯仰 %3~%4°、速度 ≤ %5），未下发")
+            Q_EMIT this->logMessage(QStringLiteral("转台运动参数超出本转台行程（水平 %1~%2°、俯仰 %3~%4°、速度 ≤ %5），未下发")
                                 .arg(SqafConfig::panMin).arg(SqafConfig::panMax).arg(SqafConfig::tiltMin)
                                 .arg(SqafConfig::tiltMax).arg(SqafConfig::speedMax));
             return false;
         }
-        return this->device().send(SqafVocab::startOf(meta), {});
+        return this->send(SqafVocab::startOf(meta), {});
     }
 
     // 编号检查先于缩窄转换，非法输入不成帧。
@@ -280,7 +277,7 @@ private:
     {
         if (preset >= SqafConfig::presetMin && preset <= SqafConfig::presetMax)
             return true;
-        Q_EMIT this->device().logMessage(QStringLiteral("预置位编号超出范围（%1~%2），未下发")
+        Q_EMIT this->logMessage(QStringLiteral("预置位编号超出范围（%1~%2），未下发")
                                          .arg(SqafConfig::presetMin).arg(SqafConfig::presetMax));
         return false;
     }
