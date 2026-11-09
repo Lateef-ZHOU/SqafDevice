@@ -130,23 +130,24 @@ private:
 public:
     // 型号判据（任务预验、造斗与直发共用）：本台角度定位协议不带速度，交出的参数去掉速度；
     // 位形拆成意图两数过行程检查（SqafVocab::withinTravel），越界返回空并记录原因。
-    [[nodiscard]] std::optional<GMBMoveParameters> paramsFor(const GMBMoveParameters &draft) const override
+    [[nodiscard]] std::optional<GMBMoveParameters> paramsFor(const PanTiltModel &target, const std::chrono::milliseconds hold,
+        const std::optional<GMBMoveParameters::Speeds> &) const override
     {
-        if (!SqafVocab::withinTravel(SqafMoveMeta{.pan = draft.target.pan(), .tilt = draft.target.tilt()}))
+        if (!SqafVocab::withinTravel(SqafMoveMeta{.pan = target.pan(), .tilt = target.tilt()}))
         {
             Q_EMIT this->logMessage(QStringLiteral("转台目标（水平 %1°、俯仰 %2°）超出本转台行程，未下发")
-                                        .arg(draft.target.pan(), 0, 'f', 2).arg(draft.target.tilt(), 0, 'f', 2));
+                                        .arg(target.pan(), 0, 'f', 2).arg(target.tilt(), 0, 'f', 2));
             return std::nullopt;
         }
-        return GMBMoveParameters{draft.target, draft.hold, std::nullopt};
+        return GMBMoveParameters{target, hold, std::nullopt};
     }
 
 private:
     // 云台族可变点之一（NVI）：按校验后的参数造一只完整的本型号收集器，交出启动 / 停机指令、容差、时限；
     // 驻留时长是调用方交的。
-    [[nodiscard]] std::shared_ptr<SqafCollector> makeMoveCollector(const GMBMoveParameters &draft) const override
+    [[nodiscard]] std::shared_ptr<SqafCollector> makeMoveCollector(const GMBMoveParameters &requested) const override
     {
-        const auto parameters = paramsFor(draft);
+        const auto parameters = paramsFor(requested.target, requested.hold, requested.speeds);
         if (!parameters)
             return nullptr;
         const SqafMoveMeta meta{.pan = parameters->target.pan(), .tilt = parameters->target.tilt()};
