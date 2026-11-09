@@ -25,7 +25,7 @@
 
 // ============================================================
 // SqafDevice — sqaf 云台设备子类：子夹最高长官（职责对齐 HfnlDevice 之于 Hfnl）。四件事：
-//   ① **造斗只走族口**：makeMoveCollector 照位形造族级收集器（方向键连动只直发、不造斗）；
+//   ① **造斗只走族口**：paramsFor 校验运动参数，begin 经 makeMoveCollector 造本型号收集器（方向键连动只直发、不造斗）；
 //      实时回显归族层常态灶（本官邸只填解析口 decodeStream）；
 //   ② 设备页云台指令直发（预置位 / 自检 / 角度回传开关 / 查询）——字节事实全在 SqafVocab 的词里，
 //      本类只说意图；直发验锁统一在 Device::send（canEngage）；
@@ -127,19 +127,32 @@ private:
         return ports;
     }
 
-    // 云台族可变点之一（NVI）：照目标位形造一只**族级收集器**。本台的角度定位不带速度字段，故除位形
-    // 外无可填——族口 collectorFor 在此正好一一对应。位形拆成意图两数，过行程检查
-    // （SqafVocab::withinTravel，与设备页直发同一道）后，交出启动 / 停机指令、容差、时限；驻留时长是调用方交的。
-    [[nodiscard]] std::shared_ptr<const SqafCollector>
-    makeMoveCollector(const PanTiltModel &target, const std::chrono::milliseconds hold,
-                      const GMBMoveParameters &) const override
+public:
+    // 型号判据（任务预验、造斗与直发共用）：本台角度定位协议不带速度，交出的参数去掉速度；
+    // 位形拆成意图两数过行程检查（SqafVocab::withinTravel），越界返回空并记录原因。
+    [[nodiscard]] std::optional<GMBMoveParameters> paramsFor(const GMBMoveParameters &draft) const override
     {
-        const SqafMoveMeta meta{.pan = target.pan(), .tilt = target.tilt()};
-        if (!SqafVocab::withinTravel(meta))
+        if (!SqafVocab::withinTravel(SqafMoveMeta{.pan = draft.target.pan(), .tilt = draft.target.tilt()}))
+        {
+            Q_EMIT this->logMessage(QStringLiteral("转台目标（水平 %1°、俯仰 %2°）超出本转台行程，未下发")
+                                        .arg(draft.target.pan(), 0, 'f', 2).arg(draft.target.tilt(), 0, 'f', 2));
+            return std::nullopt;
+        }
+        return GMBMoveParameters{draft.target, draft.hold, std::nullopt};
+    }
+
+private:
+    // 云台族可变点之一（NVI）：按校验后的参数造一只完整的本型号收集器，交出启动 / 停机指令、容差、时限；
+    // 驻留时长是调用方交的。
+    [[nodiscard]] std::shared_ptr<SqafCollector> makeMoveCollector(const GMBMoveParameters &draft) const override
+    {
+        const auto parameters = paramsFor(draft);
+        if (!parameters)
             return nullptr;
-        return SqafCollector::createPrototype(target, SqafConfig::angleTol, hold,
-                                              SqafVocab::startOf(meta), SqafVocab::stopOf(),
-                                              SqafConfig::expectedDurationMs);
+        const SqafMoveMeta meta{.pan = parameters->target.pan(), .tilt = parameters->target.tilt()};
+        return SqafCollector::create(parameters->target, SqafConfig::angleTol, parameters->hold,
+                                     SqafVocab::startOf(meta), SqafVocab::stopOf(),
+                                     SqafConfig::expectedDurationMs);
     }
 
     // [worker] 族层常态灶的解析口：一帧 Pelco 应答 → 实测位形（回显与喂斗共用，**每一口都交**）。
@@ -247,9 +260,9 @@ public Q_SLOTS:
 private:
 
     // 本台的角度定位没有速度字段（Pelco-D 扩展命令只带角度），故 meta 只填两轴角度。
-    bool issueGoTo(const PanTiltModel &target, const GMBMoveParameters &) override
+    bool issueGoTo(const GMBMoveParameters &parameters) override
     {
-        return issue(SqafMoveMeta{.pan = target.pan(), .tilt = target.tilt()});
+        return issue(SqafMoveMeta{.pan = parameters.target.pan(), .tilt = parameters.target.tilt()});
     }
 
     // 实际发令时钳制使用轴的速度，再缩窄为协议字节；未使用的轴由调用处传 0。
