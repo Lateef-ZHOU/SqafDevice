@@ -25,7 +25,7 @@
 
 // ============================================================
 // SqafDevice — sqaf 云台设备子类：子夹最高长官（职责对齐 HfnlDevice 之于 Hfnl）。四件事：
-//   ① **造斗只走族口**：paramsFor 校验运动参数，begin 经 makeMoveCollector 造本型号收集器（方向键连动只直发、不造斗）；
+//   ① **造斗只走族口**：paramsFor 校验运动参数，begin 以参数直接构造本型号收集器（型号差异在 SqafCollectorTag）（方向键连动只直发、不造斗）；
 //      实时回显归族层常态灶（本官邸只填解析口 decodeStream）；
 //   ② 设备页云台指令直发（预置位 / 自检 / 角度回传开关 / 查询）——字节事实全在 SqafVocab 的词里，
 //      本类只说意图；直发验锁统一在 Device::send（canEngage）；
@@ -139,23 +139,10 @@ public:
                                         .arg(target.pan(), 0, 'f', 2).arg(target.tilt(), 0, 'f', 2));
             return std::nullopt;
         }
-        return GMBMoveParameters{target, hold, std::nullopt};
+        return GMBMoveParameters(*this, target, hold, std::nullopt);
     }
 
 private:
-    // 云台族可变点之一（NVI）：按校验后的参数造一只完整的本型号收集器，交出启动 / 停机指令、容差、时限；
-    // 驻留时长是调用方交的。
-    [[nodiscard]] std::shared_ptr<SqafCollector> makeMoveCollector(const GMBMoveParameters &requested) const override
-    {
-        const auto parameters = paramsFor(requested.target, requested.hold, requested.speeds);
-        if (!parameters)
-            return nullptr;
-        const SqafMoveMeta meta{.pan = parameters->target.pan(), .tilt = parameters->target.tilt()};
-        return SqafCollector::create(parameters->target, SqafConfig::angleTol, parameters->hold,
-                                     SqafVocab::startOf(meta), SqafVocab::stopOf(),
-                                     SqafConfig::expectedDurationMs);
-    }
-
     // [worker] 族层常态灶的解析口：一帧 Pelco 应答 → 实测位形（回显与喂斗共用，**每一口都交**）。
     // **本台一帧只报一根轴**（经、纬分两种应答帧），故官邸暂存两轴各自最近一次的值，每来一帧更新其中
     // 一根；两根都收到过才摆位形交出（另一根拿 0 补位就是占位冒充读数）。族层链路遂与一帧同报两轴的

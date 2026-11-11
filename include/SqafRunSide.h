@@ -134,7 +134,7 @@ struct SqafMoveMeta
 
     // ── Mode::Angle ──
     // 目标两轴角（云台系，°），两个具名 double，不用 `PanTiltModel`（用户定：位形模型是给任务编排的
-    // 通用接口，官邸内部不必用它——只为发两个数不必先摆一台位形再判空）。位形只在族口（makeMoveCollector /
+    // 通用接口，官邸内部不必用它——只为发两个数不必先摆一台位形再判空）。位形只在族口（SqafCollectorTag::startOf /
     // issueGoTo / decodeStream）处出现，meta 内部不用。参考系靠字段名说话：本 meta 只在云台系里用，世界角进不来。
     double pan = 0.0;
     double tilt = 0.0;
@@ -174,5 +174,15 @@ namespace SqafVocab
 [[nodiscard]] inline QList<QByteArray> stopOf() { return {buildStop()}; }
 } // namespace SqafVocab
 
-struct SqafCollectorTag;
+// 视强型号标签：容差、时限取型号常量；启动指令按目标位形现场成词，驻留时长由参数交入。
+struct SqafCollectorTag
+{
+    static constexpr double tolerance = SqafConfig::angleTol;
+    static constexpr int timeoutMs = SqafConfig::expectedDurationMs;
+    [[nodiscard]] static QList<QByteArray> startOf(const GMBMoveParameters &parameters)
+    {
+        return SqafVocab::startOf(SqafMoveMeta{.pan = parameters.target.pan(), .tilt = parameters.target.tilt()});
+    }
+    [[nodiscard]] static QList<QByteArray> stopOf() { return SqafVocab::stopOf(); }
+};
 using SqafCollector = TypedGMBCollector<SqafCollectorTag>;
