@@ -235,7 +235,7 @@ public Q_SLOTS:
     {
         return GMBDevice::setMounting(WorldModel(azimuth, elevation, roll), {});
     }
-    bool issueStop() override { return this->send(SqafVocab::stopOf(), {}); }
+    bool issueStop() { return GMBDevice::issueStop(); }
     bool moveLeftUp(const int hSpeed, const int vSpeed) { return issueMove(SqafVocab::LeftUp, speedCode(hSpeed), speedCode(vSpeed)); }
     bool moveUp(const int vSpeed) { return issueMove(SqafVocab::Up, 0, speedCode(vSpeed)); }
     bool moveRightUp(const int hSpeed, const int vSpeed) { return issueMove(SqafVocab::RightUp, speedCode(hSpeed), speedCode(vSpeed)); }
@@ -246,12 +246,6 @@ public Q_SLOTS:
     bool moveRightDown(const int hSpeed, const int vSpeed) { return issueMove(SqafVocab::RightDown, speedCode(hSpeed), speedCode(vSpeed)); }
 
 private:
-
-    // 本台的角度定位没有速度字段（Pelco-D 扩展命令只带角度），故 meta 只填两轴角度。
-    bool issueGoTo(const std::optional<GMBMoveParameters> &parameters) override
-    {
-        return parameters && issue(SqafMoveMeta{.pan = parameters->target.pan(), .tilt = parameters->target.tilt()});
-    }
 
     // 实际发令时钳制使用轴的速度，再缩窄为协议字节；未使用的轴由调用处传 0。
     [[nodiscard]] static quint8 speedCode(const int speed)
