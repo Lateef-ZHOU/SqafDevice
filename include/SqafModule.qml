@@ -11,7 +11,9 @@ ModulePage {
     readonly property QtObject family: internals.device // 云台族基不是 QObject，交出设备对象本身
     sections: [connectionSection, positioningSection, modelControlSection].filter(item => item !== null)
     function worldHistory(begin, end) { return angles ? angles.worldHistory(begin, end) : undefined }
-    function moveParameters() { return ({}) }
+    // 本型号定位不带速度：页面交 0，型号 paramsFor 忽略。
+    readonly property real panSpeed: 0
+    readonly property real tiltSpeed: 0
     // 官邸独持输入；分区只编辑这份状态，连接和发令时一次提交。
     property int serialPortIndex: internals.connectionParameters.serialPortDefault
     property int hSpeed: internals.controlParameters.speedDefault
