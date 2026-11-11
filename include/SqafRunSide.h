@@ -179,7 +179,7 @@ struct SqafCollectorTag
 {
     static constexpr double tolerance = SqafConfig::angleTol;
     static constexpr int timeoutMs = SqafConfig::expectedDurationMs;
-    [[nodiscard]] static QList<QByteArray> startOf(const GMBMoveParameters &parameters)
+    [[nodiscard]] static QList<QByteArray> startOf(const GMBParameters &parameters)
     {
         return SqafVocab::startOf(SqafMoveMeta{.pan = parameters.target.pan(), .tilt = parameters.target.tilt()});
     }
