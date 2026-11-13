@@ -11,7 +11,7 @@
 #include <QtEndian> // qFromBigEndian（常态灶解应答帧码字段）
 #include <QtGlobal>
 
-#include "GimbalModel.h"                  // PanTiltModel（造斗收的目标位形）
+#include "GMBFamily/GimbalModel.h"                  // PanTiltModel（造斗收的目标位形）
 #include "PelcoDHandle.h" // 连接机制 PelcoDHandle
 #include "GMBFamily/GMBDevice.h"               // 云台族两层（族基 GMBFamily + 族层 GMBDevice）
 #include "SqafConfig.h"      // 型号夹宪法
