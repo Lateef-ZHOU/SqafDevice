@@ -1,3 +1,7 @@
+## 2026-11-14：接入 FamilyCore（用户定）
+
+依赖声明与开关改用 FamilyCore / FAMILYCORE_WITH_*，协程头由 DeviceCore 提供。当前仅本地整理，GitHub 仍为 TaskCore，旧固定提交暂不更新；联调使用 `FETCHCONTENT_SOURCE_DIR_LIDAR_FAMILYCORE` 指向相邻 FamilyCore，并覆盖配套 DeviceCore/Algorithm 等源码。Windows 主程序或 simonly 的实际消费目标构建通过，业务与数据格式不变；未推送、未更新交付包。
+
 # SqafDevice
 
 2026-11-09 用户定：官邸提供 `paramsFor(target, hold, speeds)`（型号校验与量化，任务预验、造斗与直发共用），makeMoveCollector 与手动 issueGoTo 都收 `GMBMoveParameters` 并复用该判据；删除 collectorFor 与只读原型，Collector 由 begin 直接造出完整对象。
@@ -19,7 +23,7 @@ LiDAR 的独立官邸：具体 C++ 后端、Collector/协议/处理逻辑及其 
 - QML 模块：`Lidar.Sqaf`；页面：`SqafModule`。
 - CMake 目标：`Lidar::SqafDevice`；静态插件：`LidarSqafDeviceplugin`，最终可执行文件显式 `Q_IMPORT_QML_PLUGIN(LidarSqafDevicePlugin)`，并导入 TaskUI/UI/Charts 的静态插件。
 - 页面以 attached 对象拥有唯一具体后端，后端不能在 QML 直接创建。设备通过只读 `family` 借出族引用；任务页面只接收族列表，不依赖设备官邸。
-- 依赖由 `cmake/Dependencies.cmake` 固定到提交；可用标准 FetchContent 源码覆盖做联调。多个官邸并用时，先开启所有需要的 HandleCore/TaskCore 可选项，再配置共享库，避免已创建目标后补开模块。
+- 依赖由 `cmake/Dependencies.cmake` 固定到提交；可用标准 FetchContent 源码覆盖做联调。多个官邸并用时，先开启所有需要的 HandleCore/FamilyCore 可选项，再配置共享库，避免已创建目标后补开模块。
 - 需要 libserialport >= 0.1.1；串口权限由运行环境提供。
 - Pelco-D 成帧使用 Boost.CircularBuffer。优先复用 `Boost::circular_buffer` 或已安装的 Boost >= 1.88 CMake 包；否则自动拉取 SHA256 固定的 Boost 1.88.0 官方 CMake 归档，只启用 CircularBuffer 及其头文件依赖。没有新增运行时动态库；离线可设置 `FETCHCONTENT_SOURCE_DIR_BOOST` 为同版 CMake 归档解压目录。
 
@@ -96,7 +100,7 @@ Windows 主程序增量构建和八秒离屏冒烟通过；本仓测试调用已
 
 串口连接区使用 UICore ConnectionSection，小标题使用 Subheading；保留方向键、原有组间距与型号连接动作。 本轮仅本地整理，未推送；Windows 集成验证记录见主程序维护操作。
 
-2026-11-05 输入宽度整理：预置位输入删除局部 preferredWidth=80，由 FieldRow 分配空间。方向键、特殊布局和既定组间距、命令与校验保持。同步 TaskCore 本地依赖；主程序 Windows 增量构建及八秒冒烟通过，未推送。
+2026-11-05 输入宽度整理：预置位输入删除局部 preferredWidth=80，由 FieldRow 分配空间。方向键、特殊布局和既定组间距、命令与校验保持。同步 FamilyCore 本地依赖；主程序 Windows 增量构建及八秒冒烟通过，未推送。
 
 
 ### 2026-11-05 连接间距、累积默认值与径向风页面整理
