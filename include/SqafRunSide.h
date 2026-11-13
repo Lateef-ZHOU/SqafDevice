@@ -1,5 +1,5 @@
 #pragma once
-#include "GMBCollector.h"
+#include "GMBFamily/GMBCollector.h"
 #include <cmath> // lround（角→码）
 #include <QByteArray>
 #include <QList>
