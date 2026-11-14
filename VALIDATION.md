@@ -1,3 +1,7 @@
+## 2026-11-14：vector 引用发送验证
+
+测试命令适配 const vector& 发送入口；Windows 独立构建、公开头及 CTest 2/2 通过。证据主程序 build/vectorsend-SqafDevice-{build,test}.log。未操作硬件、不推送。
+
 ## 2026-11-14：onData 只读 span 验证
 
 上传/测试替身适配 span；只在现有 Qt 解析或断言边界借用适配。Windows 独立构建、公开头和 CTest 2/2 通过；日志在主程序 build/ondata-SqafDevice-{build,test}.log。仅本地，不推送，无真实硬件操作。

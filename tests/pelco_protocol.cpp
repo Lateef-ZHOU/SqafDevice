@@ -11,10 +11,11 @@
 #include <QCoreApplication>
 
 
-// 仅供同步发送表达式借用；返回视图不保活参数，不能跨语句保存。
-static std::span<const unsigned char> sendBytes(const QByteArray &bytes)
+// 将既有 Qt 测试命令转换为自有字节。
+static std::vector<unsigned char> sendBytes(const QByteArray &bytes)
 {
-    return {reinterpret_cast<const unsigned char *>(bytes.constData()), static_cast<std::size_t>(bytes.size())};
+    return {reinterpret_cast<const unsigned char *>(bytes.constData()),
+            reinterpret_cast<const unsigned char *>(bytes.constData()) + bytes.size()};
 }
 
 namespace
