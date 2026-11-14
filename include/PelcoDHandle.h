@@ -10,7 +10,7 @@
 #include "PelcoDProtocol.h"
 
 // Pelco-D 适配；串口机械收发来自独立库，设备命令与角度解释留在 Sqaf。
-class PelcoDHandle : public SerialHandle
+class PelcoDHandle : public SerialHandle<PelcoFrame::Size / 2>
 {
     Q_OBJECT
 public:
@@ -21,22 +21,24 @@ Q_SIGNALS:
     void logMessage(const std::string &text) const final;
 
 protected:
-    // 单字节输入；固定七字节窗口每次至多形成一帧，保留帧头所在读取块的时刻。
+    // 每块最多三字节；滑动七字节校验窗口，保留帧头所在读取块的时刻。
     [[nodiscard]] RXRuling onRX(std::span<const unsigned char> view, const RxTime at,
                                std::shared_ptr<SerialConn>) override
     {
-        bytes_.push_back({static_cast<char>(view.front()), at});
-        if (bytes_.size() < PelcoFrame::Size)
-            return {};
-        for (int i = 0; i < PelcoFrame::Size; ++i)
-            frame_[i] = bytes_[i].value;
-        if (!PelcoFrame::kindOf(QByteArray::fromRawData(frame_.data(), PelcoFrame::Size))) {
-            bytes_.pop_front();
-            return {};
+        for (const auto byte : view)
+            bytes_.push_back({static_cast<char>(byte), at});
+        while (bytes_.size() >= PelcoFrame::Size) {
+            for (int i = 0; i < PelcoFrame::Size; ++i)
+                frame_[i] = bytes_[i].value;
+            if (!PelcoFrame::kindOf(QByteArray::fromRawData(frame_.data(), PelcoFrame::Size))) {
+                bytes_.pop_front();
+                continue;
+            }
+            const auto frameAt = bytes_.front().at;
+            bytes_.erase_begin(PelcoFrame::Size);
+            return {{reinterpret_cast<const unsigned char *>(frame_.data()), frame_.size()}, RXRuling::Decode, frameAt};
         }
-        const auto frameAt = bytes_.front().at;
-        bytes_.erase_begin(PelcoFrame::Size);
-        return {{reinterpret_cast<const unsigned char *>(frame_.data()), frame_.size()}, RXRuling::Decode, frameAt};
+        return {};
     }
 
 private:
@@ -47,7 +49,8 @@ private:
     }
     struct StampedByte { char value; RxTime at; };
     // frame_ 为同步上传提供连续存储；下一次 onRX 前不会改变。
-    boost::circular_buffer<StampedByte> bytes_{PelcoFrame::Size};
+    // 六字节尾部加最多三字节输入，解析前不得覆盖旧字节。
+    boost::circular_buffer<StampedByte> bytes_{PelcoFrame::Size + PelcoFrame::Size / 2 - 1};
     std::array<char, PelcoFrame::Size> frame_{};
 
     [[nodiscard]] TXRuling onTX(std::span<const unsigned char> view, std::shared_ptr<SerialConn>) const override

@@ -1,3 +1,9 @@
+## 2026-11-15：三字节分块成帧验证
+
+按七字节帧的一半设置三字节上传上限，环形容量为九字节；追加整块后滑动校验窗口，一次最多返回一帧。既有 8192 种分片、假帧头、连续帧、校验恢复、帧头块时间和重连验证改用真实三字节上限。
+
+Windows Release、公开头与 CTest 2/2 通过，主程序串口协议 1/1、Release 构建和 8 秒冒烟通过。Sqaf 配置的 qmllint 目标返回 0，保留两条现有模板设备到 QObject 的静态识别告警。日志为相邻主程序 build/serial-chunk-SqafDevice-*.log、serial-chunk-pelco-*.log、serial-chunk-qmllint.log。未操作硬件、不推送。
+
 ## 2026-11-15：单字节 onRX 成帧验证
 
 删除 PelcoDFramer，七字节环形窗口和帧头块时间移入 PelcoDHandle::onRX；结果借用成员连续数组，重新打开前清除旧半帧。保留 8192 种分片、连续帧、坏帧恢复、帧头时间及重连覆盖。

@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     // 两帧之间的 13 个边界任意拆分：8192 种分片，验证帧头所在读取块的时间。
     for (unsigned mask = 0; mask < (1u << 13); ++mask)
     {
-        SerialRxProbe<PelcoDHandle> receiver;
+        SerialRxProbe<PelcoDHandle, PelcoFrame::Size / 2> receiver;
         std::vector<QByteArray> frames;
         std::vector<RxTime> times;
         std::array<RxTime, 2> expected{};
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
         require(times == std::vector<RxTime>{expected[0], expected[1]}, "frame timestamp did not follow its header block");
     }
     {
-        SerialRxProbe<PelcoDHandle> receiver;
+        SerialRxProbe<PelcoDHandle, PelcoFrame::Size / 2> receiver;
         std::vector<QByteArray> frames;
         const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime) { frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); };
         QByteArray bad = a; bad[6] = 0;
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
     // 有效帧头落在坏候选内部，须逐字节重找，且使用该头所属读取块的时刻。
     {
-        SerialRxProbe<PelcoDHandle> receiver;
+        SerialRxProbe<PelcoDHandle, PelcoFrame::Size / 2> receiver;
         std::vector<QByteArray> frames;
         std::vector<RxTime> times;
         const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime at) {
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
     require(static_cast<quint8>(checksumSync.back()) == 0xff, "checksum FF fixture");
     for (int offset = 0; offset < PelcoFrame::Size; ++offset)
     {
-        SerialRxProbe<PelcoDHandle> receiver;
+        SerialRxProbe<PelcoDHandle, PelcoFrame::Size / 2> receiver;
         std::vector<QByteArray> frames;
         const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime) { frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); };
         receiver.feed(rxBytes(QByteArray(offset, 'x') + embeddedSync + checksumSync + a + b), origin, collect);
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 
     // 重复假头不得阻塞后续有效帧；校验正确但头错误同样拒绝。
     {
-        SerialRxProbe<PelcoDHandle> receiver;
+        SerialRxProbe<PelcoDHandle, PelcoFrame::Size / 2> receiver;
         std::vector<QByteArray> frames;
         const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime) { frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); };
         QByteArray wrongHead = a; wrongHead[0] = 0;
