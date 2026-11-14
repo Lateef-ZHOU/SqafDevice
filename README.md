@@ -1,3 +1,11 @@
+## 2026-11-14：串口标准容器验证
+
+Windows Release、公开头与 CTest 2/2 通过；端口缓存改用 vector，判空及负数/越界下标处理保持，移除本头无用 QList 包含。主程序增量构建及 8 秒离屏冒烟通过，证据主程序 build/serialvector-SqafDevice-*.log。未操作硬件、不推送。
+
+## 2026-11-14：串口缓存使用标准容器
+
+端口缓存改用 const std::vector<SerialPortInfo>，保持首次枚举一次、同序展示和按下标连接。使用 empty() 和有符号下标校验，删除本头已无用户的 QList 包含。Qt 文本仅在既有界面边界转换；连接行为不变、不推送。
+
 ## 2026-11-14：串口字符串边界
 
 SerialPortInfo 的名称与描述改用 std::string，保留 libserialport 原始编码。仅在 QML/命令行边界转换 Qt 字符串，线路规格文本转换返回标准字符串。协议、连接参数及关闭行为不变。本轮不推送。

@@ -2,10 +2,11 @@
 #include <format>
 #include <QtQml/qqmlregistration.h>
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <optional>
+#include <vector>
 #include <QByteArray>
-#include <QList>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -122,9 +123,9 @@ private:
     }
 
     // 首用时枚举一次；选项次序与 QML 收到的表一致，插拔仍需重启程序。
-    [[nodiscard]] static const QList<SerialPortInfo> &serialPorts()
+    [[nodiscard]] static const std::vector<SerialPortInfo> &serialPorts()
     {
-        static const QList<SerialPortInfo> ports = availablePorts();
+        static const std::vector<SerialPortInfo> ports = availablePorts();
         return ports;
     }
 
@@ -194,17 +195,17 @@ public Q_SLOTS:
     void open(const int serialPortIndex)
     {
         const auto &ports = serialPorts();
-        if (ports.isEmpty())
+        if (ports.empty())
         {
             Q_EMIT this->logMessage("没有可用串口，未连接");
             return;
         }
-        if (serialPortIndex < 0 || serialPortIndex >= ports.size())
+        if (serialPortIndex < 0 || static_cast<std::size_t>(serialPortIndex) >= ports.size())
         {
             Q_EMIT this->logMessage("串口选项下标无效，未连接");
             return;
         }
-        PelcoDHandle::open(SqafConfig::serialParameters(ports.at(serialPortIndex)));
+        PelcoDHandle::open(SqafConfig::serialParameters(ports.at(static_cast<std::size_t>(serialPortIndex))));
     }
     void close() { PelcoDHandle::close(); }
 
