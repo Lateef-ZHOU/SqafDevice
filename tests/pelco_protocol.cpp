@@ -1,3 +1,4 @@
+#include "SerialRxProbe.h"
 #include <string>
 #include <functional>
 #include "CallbackHandle.h"
@@ -48,7 +49,7 @@ int main(int argc, char **argv)
     // 两帧之间的 13 个边界任意拆分：8192 种分片，验证帧头所在读取块的时间。
     for (unsigned mask = 0; mask < (1u << 13); ++mask)
     {
-        PelcoDFramer framer;
+        SerialRxProbe<PelcoDHandle> receiver;
         std::vector<QByteArray> frames;
         std::vector<RxTime> times;
         std::array<RxTime, 2> expected{};
@@ -60,38 +61,38 @@ int main(int argc, char **argv)
             const auto at = origin + std::chrono::milliseconds(end);
             for (int index = 0; index < 2; ++index)
                 if (start <= index * 7 && index * 7 < end) expected[index] = at;
-            framer.feed(rxBytes(both.mid(start, end - start)), at, collect);
+            receiver.feed(rxBytes(both.mid(start, end - start)), at, collect);
             start = end;
         }
         require(frames == std::vector<QByteArray>{a, b}, "partition lost or combined frames");
         require(times == std::vector<RxTime>{expected[0], expected[1]}, "frame timestamp did not follow its header block");
     }
     {
-        PelcoDFramer framer;
+        SerialRxProbe<PelcoDHandle> receiver;
         std::vector<QByteArray> frames;
         const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime) { frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); };
         QByteArray bad = a; bad[6] = 0;
-        framer.feed(rxBytes(QByteArray(4096, 'x') + bad + a + b.first(3)), origin, collect);
+        receiver.feed(rxBytes(QByteArray(4096, 'x') + bad + a + b.first(3)), origin, collect);
         require(frames == std::vector<QByteArray>{a}, "noise/checksum/tail handling failed");
-        framer.feed(rxBytes(b.mid(3) + a + b), origin, collect);
+        receiver.feed(rxBytes(b.mid(3) + a + b), origin, collect);
         require(frames == std::vector<QByteArray>{a, b, a, b}, "tail plus burst delivery failed");
     }
 
     // 有效帧头落在坏候选内部，须逐字节重找，且使用该头所属读取块的时刻。
     {
-        PelcoDFramer framer;
+        SerialRxProbe<PelcoDHandle> receiver;
         std::vector<QByteArray> frames;
         std::vector<RxTime> times;
         const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime at) {
             frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); times.push_back(at);
         };
-        framer.feed(rxBytes(QByteArray::fromHex("ff0000")), origin, collect);
-        framer.feed(rxBytes(a.first(2)), origin + std::chrono::seconds(1), collect);
-        framer.feed(rxBytes(a.sliced(2)), origin + std::chrono::seconds(2), collect);
+        receiver.feed(rxBytes(QByteArray::fromHex("ff0000")), origin, collect);
+        receiver.feed(rxBytes(a.first(2)), origin + std::chrono::seconds(1), collect);
+        receiver.feed(rxBytes(a.sliced(2)), origin + std::chrono::seconds(2), collect);
         require(frames == std::vector<QByteArray>{a}, "bad candidate swallowed inner frame header");
         require(times == std::vector<RxTime>{origin + std::chrono::seconds(1)},
                 "resync kept noise timestamp instead of new frame header timestamp");
-        framer.feed(rxBytes({}), origin, collect);
+        receiver.feed(rxBytes({}), origin, collect);
         require(frames.size() == 1, "empty read duplicated delivery");
     }
 
@@ -101,23 +102,23 @@ int main(int argc, char **argv)
     require(static_cast<quint8>(checksumSync.back()) == 0xff, "checksum FF fixture");
     for (int offset = 0; offset < PelcoFrame::Size; ++offset)
     {
-        PelcoDFramer framer;
+        SerialRxProbe<PelcoDHandle> receiver;
         std::vector<QByteArray> frames;
         const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime) { frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); };
-        framer.feed(rxBytes(QByteArray(offset, 'x') + embeddedSync + checksumSync + a + b), origin, collect);
+        receiver.feed(rxBytes(QByteArray(offset, 'x') + embeddedSync + checksumSync + a + b), origin, collect);
         require(frames == std::vector<QByteArray>{embeddedSync, checksumSync, a, b},
                 "physical wrap or payload/checksum FF altered frame boundaries");
     }
 
     // 重复假头不得阻塞后续有效帧；校验正确但头错误同样拒绝。
     {
-        PelcoDFramer framer;
+        SerialRxProbe<PelcoDHandle> receiver;
         std::vector<QByteArray> frames;
         const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime) { frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); };
         QByteArray wrongHead = a; wrongHead[0] = 0;
-        framer.feed(rxBytes(wrongHead), origin, collect);
+        receiver.feed(rxBytes(wrongHead), origin, collect);
         require(frames.empty(), "checksum-only candidate with bad header accepted");
-        framer.feed(rxBytes(QByteArray::fromHex("ff").repeated(4096) + a), origin, collect);
+        receiver.feed(rxBytes(QByteArray::fromHex("ff").repeated(4096) + a), origin, collect);
         require(frames == std::vector<QByteArray>{a}, "repeated bad headers blocked recovery");
     }
 

@@ -148,7 +148,7 @@ private:
     // **本台一帧只报一根轴**（经、纬分两种应答帧），故官邸暂存两轴各自最近一次的值，每来一帧更新其中
     // 一根；两根都收到过才摆位形交出（另一根拿 0 补位就是占位冒充读数）。族层链路遂与一帧同报两轴的
     // 型号一字不差。
-    // 上抛的是**完整 7 字节 Pelco 帧**（PelcoDFramer 做帧头 / 长度 / 校验和三判，不剥
+    // 上抛的是**完整 7 字节 Pelco 帧**（PelcoDHandle::onRX 做帧头 / 长度 / 校验和三判，不剥
     // 信封）：p[3] 取应答帧型、p[4..5] 取大端码值——解码走 SqafVocab。
     [[nodiscard]] std::optional<PanTiltModel> decodeStream(const QByteArray &raw) override
     {

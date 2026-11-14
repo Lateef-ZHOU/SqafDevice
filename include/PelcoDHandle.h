@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <format>
-#include <functional>
+#include <array>
 #include <span>
 #include <memory>
 #include <boost/circular_buffer.hpp>
@@ -9,46 +9,8 @@
 #include <SerialHandle.h>
 #include "PelcoDProtocol.h"
 
-// 只保留不足一帧的尾部。每个字节携其读取块的观测时刻，重同步后仍能找到帧头所在块。
-// RxTime 是软件读取观测值，不声称是硬件首字节到达时刻。
-class PelcoDFramer
-{
-public:
-    void feed(std::span<const unsigned char> chunk, const RxTime at, const std::function<void(std::span<const unsigned char>, RxTime)> &deliver)
-    {
-        for (const unsigned char byte : chunk)
-        {
-            bytes_.push_back({static_cast<char>(byte), at});
-            while (bytes_.size() >= PelcoFrame::Size)
-            {
-                QByteArray frame(PelcoFrame::Size, Qt::Uninitialized);
-                for (int i = 0; i < PelcoFrame::Size; ++i)
-                    frame[i] = bytes_[i].value;
-                if (!PelcoFrame::kindOf(frame))
-                {
-                    bytes_.pop_front(); // 帧头或校验和失败，只丢一个字节重新找帧。
-                    continue;
-                }
-                const auto frameAt = bytes_.front().at;
-                bytes_.erase_begin(PelcoFrame::Size);
-                deliver({reinterpret_cast<const unsigned char *>(frame.constData()),
-                         static_cast<std::size_t>(frame.size())}, frameAt);
-            }
-        }
-    }
-
-private:
-    struct StampedByte
-    {
-        char value;
-        RxTime at;
-    };
-    // 每追加一个字节就处理已有完整帧；剩余不足七字节，不会覆盖尚未判定的帧。
-    boost::circular_buffer<StampedByte> bytes_{PelcoFrame::Size};
-};
-
 // Pelco-D 适配；串口机械收发来自独立库，设备命令与角度解释留在 Sqaf。
-class PelcoDHandle : public SerialHandle<PelcoDFramer>
+class PelcoDHandle : public SerialHandle
 {
     Q_OBJECT
 public:
@@ -58,14 +20,37 @@ Q_SIGNALS:
     void connectionChanged(HandleCore::ResourcePhase connected) override;
     void logMessage(const std::string &text) const final;
 
-private:
+protected:
+    // 单字节输入；固定七字节窗口每次至多形成一帧，保留帧头所在读取块的时刻。
     [[nodiscard]] RXRuling onRX(std::span<const unsigned char> view, const RxTime at,
-                               std::shared_ptr<SerialConn<PelcoDFramer>>) override
+                               std::shared_ptr<SerialConn>) override
     {
-        return {view, RXRuling::Decode, at}; // 成帧器已检查帧头、长度和校验和。
+        bytes_.push_back({static_cast<char>(view.front()), at});
+        if (bytes_.size() < PelcoFrame::Size)
+            return {};
+        for (int i = 0; i < PelcoFrame::Size; ++i)
+            frame_[i] = bytes_[i].value;
+        if (!PelcoFrame::kindOf(QByteArray::fromRawData(frame_.data(), PelcoFrame::Size))) {
+            bytes_.pop_front();
+            return {};
+        }
+        const auto frameAt = bytes_.front().at;
+        bytes_.erase_begin(PelcoFrame::Size);
+        return {{reinterpret_cast<const unsigned char *>(frame_.data()), frame_.size()}, RXRuling::Decode, frameAt};
     }
 
-    [[nodiscard]] TXRuling onTX(std::span<const unsigned char> view, std::shared_ptr<SerialConn<PelcoDFramer>>) const override
+private:
+    std::shared_ptr<SerialConn> connOpen(const SerialParams &params) final
+    {
+        bytes_.clear();
+        return SerialHandle::connOpen(params);
+    }
+    struct StampedByte { char value; RxTime at; };
+    // frame_ 为同步上传提供连续存储；下一次 onRX 前不会改变。
+    boost::circular_buffer<StampedByte> bytes_{PelcoFrame::Size};
+    std::array<char, PelcoFrame::Size> frame_{};
+
+    [[nodiscard]] TXRuling onTX(std::span<const unsigned char> view, std::shared_ptr<SerialConn>) const override
     {
         if (view.size() != PelcoFrame::CommandSize)
         {

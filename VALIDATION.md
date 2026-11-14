@@ -1,3 +1,9 @@
+## 2026-11-15：单字节 onRX 成帧验证
+
+删除 PelcoDFramer，七字节环形窗口和帧头块时间移入 PelcoDHandle::onRX；结果借用成员连续数组，重新打开前清除旧半帧。保留 8192 种分片、连续帧、坏帧恢复、帧头时间及重连覆盖。
+
+Windows Release、公开头编译和 CTest 2/2 通过；主程序独立串口协议验证 1/1、Release 构建及 8 秒离屏冒烟通过。主程序旧串口测试缓存仍指向迁移前目录，本轮使用新的 build/serial-byte-pelco 配置验证，未改旧缓存。证据：相邻主程序 build/serial-byte-SqafDevice-*.log、serial-byte-pelco-*.log。未操作硬件、不推送。
+
 ## 2026-11-14：串口成帧 span 验证
 
 成帧器 feed/deliver 改用只读 span；底层缓冲仍自有，测试留存结果时复制字节。保留 8192 种分片、环形跨界、假帧头、校验失败恢复及帧头块时间验证。Windows Release、公开头及 CTest 2/2 通过。主程序构建和离屏冒烟通过，日志在主程序 build/framerspan-SqafDevice-*.log。未操作硬件、不推送。
