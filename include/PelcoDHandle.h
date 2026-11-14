@@ -62,7 +62,7 @@ private:
                  static_cast<std::size_t>(frame.size())}, RXRuling::Decode, at}; // 成帧器已检查帧头、长度和校验和。
     }
 
-    [[nodiscard]] TXRuling onTX(const QByteArray &command, std::shared_ptr<SerialConn<PelcoDFramer>>) const override
+    [[nodiscard]] TXRuling onTX(QByteArray &command, std::shared_ptr<SerialConn<PelcoDFramer>>) const override
     {
         if (command.size() != PelcoFrame::CommandSize)
         {
@@ -70,6 +70,8 @@ private:
             return {};
         }
         const auto *p = reinterpret_cast<const quint8 *>(command.constData());
-        return {PelcoFrame(p[0], p[1], p[2], p[3]), TXRuling::Encode};
+        command = PelcoFrame(p[0], p[1], p[2], p[3]);
+        return {{reinterpret_cast<const unsigned char *>(command.constData()),
+                 static_cast<std::size_t>(command.size())}, TXRuling::Encode};
     }
 };
