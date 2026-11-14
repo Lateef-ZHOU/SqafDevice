@@ -1,3 +1,9 @@
+## 2026-11-14：适配只读发送视图
+
+串口协议测试适配 Handle 的只读 span 单条发送入口，临时 QByteArray 只在完整发送表达式内借用；生产协议、命令表发送和关闭行为不变。
+
+Windows build-params 构建及页面/串口测试 2/2 通过；日志 sendspan-{build,test}.log。 本轮不推送。
+
 ## 2026-11-14：UTF-8 日志接口（用户定）
 
 串口 Handle 的 logMessage 改为 UTF-8 std::string；长度、行程和预置位动态日志使用 std::format，保留角度两位小数。QML 使用 UICore 的公共转换，协议、发送、重连和关闭不变。

@@ -10,6 +10,13 @@
 #include <vector>
 #include <QCoreApplication>
 
+
+// 仅供同步发送表达式借用；返回视图不保活参数，不能跨语句保存。
+static std::span<const unsigned char> sendBytes(const QByteArray &bytes)
+{
+    return {reinterpret_cast<const unsigned char *>(bytes.constData()), static_cast<std::size_t>(bytes.size())};
+}
+
 namespace
 {
 int checks = 0;
@@ -128,8 +135,8 @@ int main(int argc, char **argv)
         for (int i = 0; i < 1000; ++i) burst += a;
         enqueue(burst);
         require(until([&] { return count() == 1002; }), "large burst lost frames at serial read boundaries");
-        require(handle.send(a.mid(2, 4)) && writes() == std::vector<QByteArray>{a}, "production TX envelope changed");
-        require(!handle.send("bad"), "invalid command accepted");
+        require(handle.send(sendBytes(a.mid(2, 4))) && writes() == std::vector<QByteArray>{a}, "production TX envelope changed");
+        require(!handle.send(sendBytes("bad")), "invalid command accepted");
         require(logs.contains("串口指令长度错误（3 字节），未发送"), "invalid TX diagnostic missing");
 
         const int readBefore = reads();
