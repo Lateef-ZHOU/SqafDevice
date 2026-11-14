@@ -18,6 +18,12 @@ static std::vector<unsigned char> sendBytes(const QByteArray &bytes)
             reinterpret_cast<const unsigned char *>(bytes.constData()) + bytes.size()};
 }
 
+// 仅用于本次同步 feed 表达式；不延长 Qt 测试输入的生命周期。
+static std::span<const unsigned char> rxBytes(const QByteArray &bytes)
+{
+    return {reinterpret_cast<const unsigned char *>(bytes.constData()), static_cast<std::size_t>(bytes.size())};
+}
+
 namespace
 {
 int checks = 0;
@@ -46,7 +52,7 @@ int main(int argc, char **argv)
         std::vector<QByteArray> frames;
         std::vector<RxTime> times;
         std::array<RxTime, 2> expected{};
-        const std::function<void(const QByteArray &, RxTime)> collect = [&](const QByteArray &frame, RxTime at) { frames.push_back(frame); times.push_back(at); };
+        const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime at) { frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); times.push_back(at); };
         int start = 0;
         for (int end = 1; end <= both.size(); ++end)
         {
@@ -54,7 +60,7 @@ int main(int argc, char **argv)
             const auto at = origin + std::chrono::milliseconds(end);
             for (int index = 0; index < 2; ++index)
                 if (start <= index * 7 && index * 7 < end) expected[index] = at;
-            framer.feed(both.mid(start, end - start), at, collect);
+            framer.feed(rxBytes(both.mid(start, end - start)), at, collect);
             start = end;
         }
         require(frames == std::vector<QByteArray>{a, b}, "partition lost or combined frames");
@@ -63,11 +69,11 @@ int main(int argc, char **argv)
     {
         PelcoDFramer framer;
         std::vector<QByteArray> frames;
-        const std::function<void(const QByteArray &, RxTime)> collect = [&](const QByteArray &frame, RxTime) { frames.push_back(frame); };
+        const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime) { frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); };
         QByteArray bad = a; bad[6] = 0;
-        framer.feed(QByteArray(4096, 'x') + bad + a + b.first(3), origin, collect);
+        framer.feed(rxBytes(QByteArray(4096, 'x') + bad + a + b.first(3)), origin, collect);
         require(frames == std::vector<QByteArray>{a}, "noise/checksum/tail handling failed");
-        framer.feed(b.mid(3) + a + b, origin, collect);
+        framer.feed(rxBytes(b.mid(3) + a + b), origin, collect);
         require(frames == std::vector<QByteArray>{a, b, a, b}, "tail plus burst delivery failed");
     }
 
@@ -76,16 +82,16 @@ int main(int argc, char **argv)
         PelcoDFramer framer;
         std::vector<QByteArray> frames;
         std::vector<RxTime> times;
-        const std::function<void(const QByteArray &, RxTime)> collect = [&](const QByteArray &frame, RxTime at) {
-            frames.push_back(frame); times.push_back(at);
+        const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime at) {
+            frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); times.push_back(at);
         };
-        framer.feed(QByteArray::fromHex("ff0000"), origin, collect);
-        framer.feed(a.first(2), origin + std::chrono::seconds(1), collect);
-        framer.feed(a.sliced(2), origin + std::chrono::seconds(2), collect);
+        framer.feed(rxBytes(QByteArray::fromHex("ff0000")), origin, collect);
+        framer.feed(rxBytes(a.first(2)), origin + std::chrono::seconds(1), collect);
+        framer.feed(rxBytes(a.sliced(2)), origin + std::chrono::seconds(2), collect);
         require(frames == std::vector<QByteArray>{a}, "bad candidate swallowed inner frame header");
         require(times == std::vector<RxTime>{origin + std::chrono::seconds(1)},
                 "resync kept noise timestamp instead of new frame header timestamp");
-        framer.feed({}, origin, collect);
+        framer.feed(rxBytes({}), origin, collect);
         require(frames.size() == 1, "empty read duplicated delivery");
     }
 
@@ -97,8 +103,8 @@ int main(int argc, char **argv)
     {
         PelcoDFramer framer;
         std::vector<QByteArray> frames;
-        const std::function<void(const QByteArray &, RxTime)> collect = [&](const QByteArray &frame, RxTime) { frames.push_back(frame); };
-        framer.feed(QByteArray(offset, 'x') + embeddedSync + checksumSync + a + b, origin, collect);
+        const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime) { frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); };
+        framer.feed(rxBytes(QByteArray(offset, 'x') + embeddedSync + checksumSync + a + b), origin, collect);
         require(frames == std::vector<QByteArray>{embeddedSync, checksumSync, a, b},
                 "physical wrap or payload/checksum FF altered frame boundaries");
     }
@@ -107,11 +113,11 @@ int main(int argc, char **argv)
     {
         PelcoDFramer framer;
         std::vector<QByteArray> frames;
-        const std::function<void(const QByteArray &, RxTime)> collect = [&](const QByteArray &frame, RxTime) { frames.push_back(frame); };
+        const std::function<void(std::span<const unsigned char>, RxTime)> collect = [&](std::span<const unsigned char> frame, RxTime) { frames.emplace_back(reinterpret_cast<const char *>(frame.data()), static_cast<qsizetype>(frame.size())); };
         QByteArray wrongHead = a; wrongHead[0] = 0;
-        framer.feed(wrongHead, origin, collect);
+        framer.feed(rxBytes(wrongHead), origin, collect);
         require(frames.empty(), "checksum-only candidate with bad header accepted");
-        framer.feed(QByteArray::fromHex("ff").repeated(4096) + a, origin, collect);
+        framer.feed(rxBytes(QByteArray::fromHex("ff").repeated(4096) + a), origin, collect);
         require(frames == std::vector<QByteArray>{a}, "repeated bad headers blocked recovery");
     }
 

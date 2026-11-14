@@ -1,3 +1,7 @@
+## 2026-11-14：串口成帧 span 验证
+
+成帧器 feed/deliver 改用只读 span；底层缓冲仍自有，测试留存结果时复制字节。保留 8192 种分片、环形跨界、假帧头、校验失败恢复及帧头块时间验证。Windows Release、公开头及 CTest 2/2 通过。主程序构建和离屏冒烟通过，日志在主程序 build/framerspan-SqafDevice-*.log。未操作硬件、不推送。
+
 ## 2026-11-14：串口标准字符串验证
 
 适配 SerialPortInfo 标准字符串；QML 签名不变，仅显示/输入边界进行本地编码转换。Windows 独立 Release、公开头与 CTest 2/2 通过，主程序增量构建和 8 秒离屏冒烟通过。日志：主程序 build/serialstring-SqafDevice-*.log。本轮未操作硬件、不推送。

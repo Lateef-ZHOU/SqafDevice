@@ -2,6 +2,7 @@
 #include <string>
 #include <format>
 #include <functional>
+#include <span>
 #include <memory>
 #include <boost/circular_buffer.hpp>
 #include <HandleBase.h>
@@ -13,11 +14,11 @@
 class PelcoDFramer
 {
 public:
-    void feed(const QByteArray &chunk, const RxTime at, const std::function<void(const QByteArray &, RxTime)> &deliver)
+    void feed(std::span<const unsigned char> chunk, const RxTime at, const std::function<void(std::span<const unsigned char>, RxTime)> &deliver)
     {
-        for (const char byte : chunk)
+        for (const unsigned char byte : chunk)
         {
-            bytes_.push_back({byte, at});
+            bytes_.push_back({static_cast<char>(byte), at});
             while (bytes_.size() >= PelcoFrame::Size)
             {
                 QByteArray frame(PelcoFrame::Size, Qt::Uninitialized);
@@ -30,7 +31,8 @@ public:
                 }
                 const auto frameAt = bytes_.front().at;
                 bytes_.erase_begin(PelcoFrame::Size);
-                deliver(frame, frameAt);
+                deliver({reinterpret_cast<const unsigned char *>(frame.constData()),
+                         static_cast<std::size_t>(frame.size())}, frameAt);
             }
         }
     }
