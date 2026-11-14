@@ -100,8 +100,8 @@ public:
         QStringList names, tips;
         for (const auto &port : serialPorts())
         {
-            names << port.portName;
-            tips << port.description;
+            names << QString::fromLocal8Bit(port.portName.data(), static_cast<qsizetype>(port.portName.size()));
+            tips << QString::fromLocal8Bit(port.description.data(), static_cast<qsizetype>(port.description.size()));
         }
         return {{"serialPortOptions", names}, {"serialPortTips", tips}, {"serialPortDefault", 0}};
     }

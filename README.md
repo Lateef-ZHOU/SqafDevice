@@ -1,3 +1,7 @@
+## 2026-11-14：串口字符串边界
+
+SerialPortInfo 的名称与描述改用 std::string，保留 libserialport 原始编码。仅在 QML/命令行边界转换 Qt 字符串，线路规格文本转换返回标准字符串。协议、连接参数及关闭行为不变。本轮不推送。
+
 ## 2026-11-14：Handle 收发边界
 
 Pelco-D 的 onRX/onTX 改收只读 span，发送封装后将完整七字节报文交给拥有存储的 TXRuling。成帧器和协议字节保持，输入只同步借用。 发送顺序、重连和关闭不变；本轮不部署硬件、不推送。统一契约见 HandleCore/docs/reference.md。

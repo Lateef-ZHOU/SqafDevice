@@ -1,3 +1,7 @@
+## 2026-11-14：串口标准字符串验证
+
+适配 SerialPortInfo 标准字符串；QML 签名不变，仅显示/输入边界进行本地编码转换。Windows 独立 Release、公开头与 CTest 2/2 通过，主程序增量构建和 8 秒离屏冒烟通过。日志：主程序 build/serialstring-SqafDevice-*.log。本轮未操作硬件、不推送。
+
 ## 2026-11-14：vector 引用发送验证
 
 测试命令适配 const vector& 发送入口；Windows 独立构建、公开头及 CTest 2/2 通过。证据主程序 build/vectorsend-SqafDevice-{build,test}.log。未操作硬件、不推送。
