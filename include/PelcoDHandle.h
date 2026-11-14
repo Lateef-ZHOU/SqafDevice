@@ -58,7 +58,8 @@ private:
     [[nodiscard]] RXRuling onRX(const QByteArray &frame, const RxTime at,
                                std::shared_ptr<SerialConn<PelcoDFramer>>) override
     {
-        return {frame, RXRuling::Decode, at}; // 成帧器已检查帧头、长度和校验和。
+        return {{reinterpret_cast<const unsigned char *>(frame.constData()),
+                 static_cast<std::size_t>(frame.size())}, RXRuling::Decode, at}; // 成帧器已检查帧头、长度和校验和。
     }
 
     [[nodiscard]] TXRuling onTX(const QByteArray &command, std::shared_ptr<SerialConn<PelcoDFramer>>) const override

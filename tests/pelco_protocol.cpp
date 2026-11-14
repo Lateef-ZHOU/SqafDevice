@@ -115,7 +115,7 @@ int main(int argc, char **argv)
         CallbackHandle<PelcoDHandle> handle([&](const QByteArray &frame, RxTime at) {
             worker = worker && QThread::currentThread() != app.thread();
             typedTime = typedTime && at != RxTime{};
-            const std::lock_guard lock(gate); received.push_back(frame);
+            const std::lock_guard lock(gate); received.emplace_back(frame.constData(), frame.size());
         });
         const auto count = [&] { const std::lock_guard lock(gate); return received.size(); };
         QStringList logs;

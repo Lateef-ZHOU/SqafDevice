@@ -1,3 +1,9 @@
+## 2026-11-14：只读 span 接收裁决（用户定）
+
+2026-11-14 接收裁决适配：onRX 返回 `std::span<const unsigned char>` 借用接收数据，onData 同步接收零拷贝 QByteArray 视图。留存或异步投递前必须复制取得字节所有权，不能仅浅拷贝视图。协议、重连和关闭逻辑不变；与本地 HandleCore 同批使用，尚未推送。
+
+Windows/MSVC：build-params 的 SqafDevice_serial 增量构建及专项 1/1 通过。验证日志为相应构建目录下 rxspan-build.log / rxspan-test.log（Linux 使用上述命名）。
+
 ## 2026-11-14：接入 FamilyCore（用户定）
 
 依赖声明与开关改用 FamilyCore / FAMILYCORE_WITH_*，协程头由 DeviceCore 提供。当前仅本地整理，GitHub 仍为 TaskCore，旧固定提交暂不更新；联调使用 `FETCHCONTENT_SOURCE_DIR_LIDAR_FAMILYCORE` 指向相邻 FamilyCore，并覆盖配套 DeviceCore/Algorithm 等源码。Windows 主程序或 simonly 的实际消费目标构建通过，业务与数据格式不变；未推送、未更新交付包。
