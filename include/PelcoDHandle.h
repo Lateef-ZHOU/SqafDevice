@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <format>
 #include <functional>
 #include <memory>
 #include <boost/circular_buffer.hpp>
@@ -52,7 +54,7 @@ public:
 
 Q_SIGNALS:
     void connectionChanged(HandleCore::ResourcePhase connected) override;
-    void logMessage(const QString &text) const final;
+    void logMessage(const std::string &text) const final;
 
 private:
     [[nodiscard]] RXRuling onRX(const QByteArray &frame, const RxTime at,
@@ -66,7 +68,7 @@ private:
     {
         if (command.size() != PelcoFrame::CommandSize)
         {
-            Q_EMIT logMessage(QStringLiteral("串口指令长度错误（%1 字节），未发送").arg(command.size()));
+            Q_EMIT logMessage(std::format("串口指令长度错误（{} 字节），未发送", command.size()));
             return {};
         }
         const auto *p = reinterpret_cast<const quint8 *>(command.constData());

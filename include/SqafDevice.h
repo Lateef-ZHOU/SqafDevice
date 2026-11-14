@@ -1,4 +1,5 @@
 #pragma once
+#include <format>
 #include <QtQml/qqmlregistration.h>
 #include <algorithm>
 #include <memory>
@@ -135,8 +136,7 @@ public:
     {
         if (!SqafVocab::withinTravel(SqafMoveMeta{.pan = target.pan(), .tilt = target.tilt()}))
         {
-            Q_EMIT this->logMessage(QStringLiteral("转台目标（水平 %1°、俯仰 %2°）超出本转台行程，未下发")
-                                        .arg(target.pan(), 0, 'f', 2).arg(target.tilt(), 0, 'f', 2));
+            Q_EMIT this->logMessage(std::format("转台目标（水平 {:.2f}°、俯仰 {:.2f}°）超出本转台行程，未下发", target.pan(), target.tilt()));
             return std::nullopt;
         }
         return GMBParameters(*this, target, hold, std::nullopt);
@@ -196,12 +196,12 @@ public Q_SLOTS:
         const auto &ports = serialPorts();
         if (ports.isEmpty())
         {
-            Q_EMIT this->logMessage(QStringLiteral("没有可用串口，未连接"));
+            Q_EMIT this->logMessage("没有可用串口，未连接");
             return;
         }
         if (serialPortIndex < 0 || serialPortIndex >= ports.size())
         {
-            Q_EMIT this->logMessage(QStringLiteral("串口选项下标无效，未连接"));
+            Q_EMIT this->logMessage("串口选项下标无效，未连接");
             return;
         }
         PelcoDHandle::open(SqafConfig::serialParameters(ports.at(serialPortIndex)));
@@ -259,9 +259,7 @@ private:
     {
         if (!SqafVocab::withinTravel(meta))
         {
-            Q_EMIT this->logMessage(QStringLiteral("转台运动参数超出本转台行程（水平 %1~%2°、俯仰 %3~%4°、速度 ≤ %5），未下发")
-                                .arg(SqafConfig::panMin).arg(SqafConfig::panMax).arg(SqafConfig::tiltMin)
-                                .arg(SqafConfig::tiltMax).arg(SqafConfig::speedMax));
+            Q_EMIT this->logMessage(std::format("转台运动参数超出本转台行程（水平 {}~{}°、俯仰 {}~{}°、速度 ≤ {}），未下发", SqafConfig::panMin, SqafConfig::panMax, SqafConfig::tiltMin, SqafConfig::tiltMax, SqafConfig::speedMax));
             return false;
         }
         return this->send(SqafVocab::startOf(meta), {});
@@ -272,8 +270,7 @@ private:
     {
         if (preset >= SqafConfig::presetMin && preset <= SqafConfig::presetMax)
             return true;
-        Q_EMIT this->logMessage(QStringLiteral("预置位编号超出范围（%1~%2），未下发")
-                                         .arg(SqafConfig::presetMin).arg(SqafConfig::presetMax));
+        Q_EMIT this->logMessage(std::format("预置位编号超出范围（{}~{}），未下发", SqafConfig::presetMin, SqafConfig::presetMax));
         return false;
     }
 

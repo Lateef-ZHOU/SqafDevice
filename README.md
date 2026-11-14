@@ -1,3 +1,11 @@
+## 2026-11-14：UTF-8 日志接口（用户定）
+
+串口 Handle 的 logMessage 改为 UTF-8 std::string；长度、行程和预置位动态日志使用 std::format，保留角度两位小数。QML 使用 UICore 的公共转换，协议、发送、重连和关闭不变。
+
+需要支持 C++20 std::format 的标准库。本轮仅本地修改与验证，不推送。
+
+验证：SqafDevice_serial 1/1 通过（build-params/logstring-*.log）；主程序集成构建和 8 秒离屏冒烟通过。
+
 ## 2026-11-14：适配 TXRuling 只读 span（用户定）
 
 Pelco-D 在 send 的局部缓冲中保存封装报文，再返回只读 span；调用方命令保持。 重连和关闭保持，与本地 HandleCore 同批使用，暂不推送。
