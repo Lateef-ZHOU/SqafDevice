@@ -1,3 +1,7 @@
+## 2026-11-14：Handle 收发边界
+
+Pelco-D 的 onRX/onTX 改收只读 span，发送封装后将完整七字节报文交给拥有存储的 TXRuling。成帧器和协议字节保持，输入只同步借用。 发送顺序、重连和关闭不变；本轮不部署硬件、不推送。统一契约见 HandleCore/docs/reference.md。
+
 ## 2026-11-14：适配只读发送视图
 
 串口协议测试适配 Handle 的只读 span 单条发送入口，临时 QByteArray 只在完整发送表达式内借用；生产协议、命令表发送和关闭行为不变。
@@ -12,7 +16,7 @@ Windows build-params 构建及页面/串口测试 2/2 通过；日志 sendspan-{
 
 验证：SqafDevice_serial 1/1 通过（build-params/logstring-*.log）；主程序集成构建和 8 秒离屏冒烟通过。
 
-## 2026-11-14：适配 TXRuling 只读 span（用户定）
+## 历史：2026-11-14 TXRuling 只读 span（已被上方拥有型裁决取代）
 
 Pelco-D 在 send 的局部缓冲中保存封装报文，再返回只读 span；调用方命令保持。 重连和关闭保持，与本地 HandleCore 同批使用，暂不推送。
 
