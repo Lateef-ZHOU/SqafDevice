@@ -1,3 +1,7 @@
+## 2026-11-14：onData 只读 span 验证
+
+上传/测试替身适配 span；只在现有 Qt 解析或断言边界借用适配。Windows 独立构建、公开头和 CTest 2/2 通过；日志在主程序 build/ondata-SqafDevice-{build,test}.log。仅本地，不推送，无真实硬件操作。
+
 ## 2026-11-14：发送裁决所有权与收发 span（用户定）
 
 适配拥有型 TXRuling 与只读 span 收发口。Windows Release 独立构建及 CTest 2/2 通过；原输入寿命、排队所有权和协议字节回归通过。日志：相邻主程序 build/wire-SqafDevice-{build,test}.log。重连、关闭与业务时序保持，仅本地提交，不推送；不涉及实物测试。
