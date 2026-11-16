@@ -2,7 +2,7 @@
 #include <chrono>
 #include <string>
 
-#include <SerialPort.h> // 串口档位三枚举 + sp_parity
+#include <SerialPort.h> // SerialParams、数据位/停止位枚举及 sp_parity
 
 // ============================================================
 // SqafConfig — sqaf 云台常量店（编译期常量；型号夹宪法，对齐 HfnlConfig）：夹内皆可读、
@@ -11,7 +11,7 @@
 // ============================================================
 namespace SqafConfig {
     // 型号固定串口规格；用户只选择端口，不编辑线路参数。
-    static constexpr BaudRate baudRate = BaudRate::B9600;
+    static constexpr int baudRate = 9600;
     static constexpr DataBits dataBits = DataBits::D8;
     static constexpr StopBits stopBits = StopBits::One; // libserialport 只收 1/2（无 1.5）
     static constexpr sp_parity parity = SP_PARITY_NONE;
@@ -19,7 +19,7 @@ namespace SqafConfig {
     // 连接和只读规格显示共用同一份构参，不保存运行状态。
     [[nodiscard]] inline SerialParams serialParameters(const std::string &portName)
     {
-        return {portName, static_cast<int>(baudRate), dataBits, stopBits, parity};
+        return {portName, baudRate, dataBits, stopBits, parity};
     }
 
     // ── 预置位 / 速度（范围是 Pelco-D 数据字节的协议事实）──────

@@ -1,3 +1,7 @@
+## 2026-11-17：固定波特率使用整数（用户定）
+
+SqafConfig::baudRate 改为 constexpr int，值仍为 9600；serialParameters 直接使用该常量，删除 BaudRate 枚举依赖及转 int 的中转。数据位、停止位和校验配置不变，仍为 9600/8N1；文字输出、发送、重连和关闭保持。验证见 VALIDATION.md，暂不推送。
+
 ## 2026-11-17：串口构参只接收端口名（用户定）
 
 SqafConfig::serialParameters 接收 const std::string& portName，直接构造只含实际连接字段的 SerialParams。官邸仍按原选项表验证下标，再提取端口名；SerialPortInfo 的枚举、描述与身份比较不变。固定 9600/8N1、无流控及发送、重连、关闭保持。验证见 VALIDATION.md，未推送。

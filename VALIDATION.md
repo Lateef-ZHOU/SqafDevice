@@ -1,3 +1,9 @@
+## 2026-11-17：波特率常量直接使用整数（用户定）
+
+SqafConfig::baudRate 改为 constexpr int 9600，serialParameters 删除枚举转换。其余固定规格、参数比较、文字输出及发送/重连/关闭保持。
+
+Windows/MSVC build-params Release 增量构建及既有 CTest 2/2（1.29 秒）通过，覆盖页面和 Pelco-D 串口。构建日志无编译/链接警告或错误；证据为 build-params/baudrate-{build,test}.log。配套 HandleCore 11/11、温控 1/1 和主程序增量构建、8 秒离屏冒烟通过，详见主程序维护操作。未重复 qmllint、Linux/ARM 或实物验证；本地提交，暂不推送。
+
 ## 2026-11-17：串口参数只传端口名（用户定）
 
 serialParameters 接收 std::string 只读引用，官邸从原枚举表取出 portName，测试直接构造新的 SerialParams。固定规格、枚举展示和参数比较语义保持；无收发、重连或关闭逻辑变化。
