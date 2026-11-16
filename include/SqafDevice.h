@@ -205,7 +205,7 @@ public Q_SLOTS:
             Q_EMIT this->logMessage("串口选项下标无效，未连接");
             return;
         }
-        PelcoDHandle::open(SqafConfig::serialParameters(ports.at(static_cast<std::size_t>(serialPortIndex))));
+        PelcoDHandle::open(SqafConfig::serialParameters(ports.at(static_cast<std::size_t>(serialPortIndex)).portName));
     }
     void close() { PelcoDHandle::close(); }
 

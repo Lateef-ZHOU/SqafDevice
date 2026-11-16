@@ -1,3 +1,7 @@
+## 2026-11-17：串口构参只接收端口名（用户定）
+
+SqafConfig::serialParameters 接收 const std::string& portName，直接构造只含实际连接字段的 SerialParams。官邸仍按原选项表验证下标，再提取端口名；SerialPortInfo 的枚举、描述与身份比较不变。固定 9600/8N1、无流控及发送、重连、关闭保持。验证见 VALIDATION.md，未推送。
+
 ## 2026-11-17：onTX 接入 vector 只读引用（用户定）
 
 onTX 输入统一为 const std::vector<unsigned char>&，同步传参不复制调用方数组；RX 仍用只读 span。Pelco-D 的命令尺寸检查与编码保持。 不新增成员状态；使用相邻本地 HandleCore 源码覆盖，远端锁定版本暂不变，不推送。Windows build-params Release 与 CTest 2/2（页面、串口）通过。 证据见主程序 docs/maintenance/validation.md 本轮记录。

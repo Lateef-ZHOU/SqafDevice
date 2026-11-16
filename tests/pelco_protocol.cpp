@@ -136,7 +136,7 @@ int main(int argc, char **argv)
         const auto count = [&] { const std::lock_guard lock(gate); return received.size(); };
         QStringList logs;
         QObject::connect(&handle, &PelcoDHandle::logMessage, &app, [&](const std::string &utf8Message) { const QString text = QString::fromUtf8(utf8Message.data(), qsizetype(utf8Message.size())); logs.push_back(text); });
-        require(handle.open(SerialParams{{"controlled", {}}}) && until([&] { return handle.isOpen(); }), "production Pelco open failed");
+        require(handle.open(SerialParams{"controlled"}) && until([&] { return handle.isOpen(); }), "production Pelco open failed");
         enqueue(both);
         require(until([&] { return count() == 2; }), "production burst needs another input");
         QByteArray burst;

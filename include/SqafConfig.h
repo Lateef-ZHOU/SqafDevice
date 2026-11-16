@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <string>
 
 #include <SerialPort.h> // 串口档位三枚举 + sp_parity
 
@@ -16,9 +17,9 @@ namespace SqafConfig {
     static constexpr sp_parity parity = SP_PARITY_NONE;
 
     // 连接和只读规格显示共用同一份构参，不保存运行状态。
-    [[nodiscard]] inline SerialParams serialParameters(const SerialPortInfo &port)
+    [[nodiscard]] inline SerialParams serialParameters(const std::string &portName)
     {
-        return {port, static_cast<int>(baudRate), dataBits, stopBits, parity};
+        return {portName, static_cast<int>(baudRate), dataBits, stopBits, parity};
     }
 
     // ── 预置位 / 速度（范围是 Pelco-D 数据字节的协议事实）──────

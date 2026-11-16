@@ -1,3 +1,9 @@
+## 2026-11-17：串口参数只传端口名（用户定）
+
+serialParameters 接收 std::string 只读引用，官邸从原枚举表取出 portName，测试直接构造新的 SerialParams。固定规格、枚举展示和参数比较语义保持；无收发、重连或关闭逻辑变化。
+
+Windows/MSVC build-params Release 增量构建（含公开头）与 CTest 2/2 通过（1.31 秒），覆盖页面和 Pelco-D 串口；主程序串口专项 1/1（1.20 秒）通过。日志：build-params/serial-params-{build,test}.log，以及主程序 build/serial-params-pelco-{build,test}.log。Linux 桥接器复用本协议的验证见 BridgeCore/VALIDATION.md，未操作转台实物，不推送。
+
 ## 2026-11-15：三字节分块成帧验证
 
 按七字节帧的一半设置三字节上传上限，环形容量为九字节；追加整块后滑动校验窗口，一次最多返回一帧。既有 8192 种分片、假帧头、连续帧、校验恢复、帧头块时间和重连验证改用真实三字节上限。
