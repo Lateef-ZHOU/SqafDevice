@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <string>
 #include <format>
 #include <array>
@@ -53,14 +54,14 @@ private:
     boost::circular_buffer<StampedByte> bytes_{PelcoFrame::Size + PelcoFrame::Size / 2 - 1};
     std::array<char, PelcoFrame::Size> frame_{};
 
-    [[nodiscard]] TXRuling onTX(std::span<const unsigned char> view, std::shared_ptr<SerialConn>) const override
+    [[nodiscard]] TXRuling onTX(const std::vector<unsigned char> &payload, std::shared_ptr<SerialConn>) const override
     {
-        if (view.size() != PelcoFrame::CommandSize)
+        if (payload.size() != PelcoFrame::CommandSize)
         {
-            Q_EMIT logMessage(std::format("串口指令长度错误（{} 字节），未发送", view.size()));
+            Q_EMIT logMessage(std::format("串口指令长度错误（{} 字节），未发送", payload.size()));
             return {};
         }
-        const PelcoFrame command(view[0], view[1], view[2], view[3]);
+        const PelcoFrame command(payload[0], payload[1], payload[2], payload[3]);
         return {{reinterpret_cast<const unsigned char *>(command.constData()),
                  reinterpret_cast<const unsigned char *>(command.constData()) + command.size()}, TXRuling::Encode};
     }

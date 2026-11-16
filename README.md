@@ -1,3 +1,7 @@
+## 2026-11-17：onTX 接入 vector 只读引用（用户定）
+
+onTX 输入统一为 const std::vector<unsigned char>&，同步传参不复制调用方数组；RX 仍用只读 span。Pelco-D 的命令尺寸检查与编码保持。 不新增成员状态；使用相邻本地 HandleCore 源码覆盖，远端锁定版本暂不变，不推送。Windows build-params Release 与 CTest 2/2（页面、串口）通过。 证据见主程序 docs/maintenance/validation.md 本轮记录。
+
 ## 2026-11-15：按半个最小帧长分块上传（用户定）
 
 SerialHandle<MaxRxBytes> 的编译期参数只表示上传上限，不恢复 Framer 类型或回调对象。各协议按最小帧长的一半向下取整：激光器 13 → 6 字节，Pelco-D 7 → 3 字节；温控成帧层接受非空主体加 CR，最短 2 → 1 字节，业务报文合法性仍由上层检查。SerialConn 仍最多一次读取 256 字节，然后顺序切为不超过上限的非空 span 同步上传；短块立即交付，不等凑满，同一读取块共用原 RxTime。
