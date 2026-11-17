@@ -15,6 +15,7 @@ class PelcoDHandle : public SerialHandle<PelcoFrame::Size / 2>
 {
     Q_OBJECT
 public:
+    using SerialHandle::SerialHandle;
     ~PelcoDHandle() override = default;
 
 Q_SIGNALS:

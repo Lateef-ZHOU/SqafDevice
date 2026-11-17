@@ -1,3 +1,7 @@
+## 2026-11-17：构造链接收 QObject 父对象（用户定）
+
+PelcoDHandle 继承 SerialHandle 构造函数，接收 Device 原样传入的 parent，最终由 QThread/QObject 建立父子关系。默认独立构造、成帧、发送与关闭链保持，不添加转发函数或成员。验证见主程序维护操作，暂不推送。
+
 ## 2026-11-17：命令集合使用 vector（用户定）
 
 startOf/stopOf 与 Collector 标签统一返回 std::vector<std::vector<unsigned char>>，官邸直接交 Device::send，删除原批次转换。原单条编码器保持；定位仍先水平后俯仰两包，点动和停机仍单包，字节、顺序与取消行为不变。
