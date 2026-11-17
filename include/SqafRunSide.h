@@ -1,8 +1,8 @@
 #pragma once
+#include <vector>
 #include "GMBFamily/GMBCollector.h"
 #include <cmath> // lround（角→码）
 #include <QByteArray>
-#include <QList>
 #include <QtGlobal>
 
 #include "PelcoDProtocol.h" // PelcoFrame（帧定长 / 命令词长契约）
@@ -163,15 +163,23 @@ namespace SqafVocab
 }
 
 // 意图 → 启动指令：按 mode 现场成词（定位双包 / 移动单包）。两支都是**直取 meta 字段下发**，零转换。
-[[nodiscard]] inline QList<QByteArray> startOf(const SqafMoveMeta &m)
+[[nodiscard]] inline std::vector<std::vector<unsigned char>> startOf(const SqafMoveMeta &m)
 {
     if (m.mode == SqafMoveMeta::Mode::Angle)
-        return {buildPanAngle(m.pan), buildTiltAngle(m.tilt)};
-    return {buildMove(m.dir, m.hSpeed, m.vSpeed)};
+    {
+        const auto pan = buildPanAngle(m.pan), tilt = buildTiltAngle(m.tilt);
+        return {{pan.cbegin(), pan.cend()}, {tilt.cbegin(), tilt.cend()}};
+    }
+    const auto command = buildMove(m.dir, m.hSpeed, m.vSpeed);
+    return {{command.cbegin(), command.cend()}};
 }
 
 // 停机指令：让云台真正停转。
-[[nodiscard]] inline QList<QByteArray> stopOf() { return {buildStop()}; }
+[[nodiscard]] inline std::vector<std::vector<unsigned char>> stopOf()
+{
+    const auto command = buildStop();
+    return {{command.cbegin(), command.cend()}};
+}
 } // namespace SqafVocab
 
 // 视强型号标签：容差、时限取型号常量；启动指令按目标位形现场成词，驻留时长由参数交入。
@@ -179,10 +187,10 @@ struct SqafCollectorTag
 {
     static constexpr double tolerance = SqafConfig::angleTol;
     static constexpr int timeoutMs = SqafConfig::expectedDurationMs;
-    [[nodiscard]] static QList<QByteArray> startOf(const GMBParameters &parameters)
+    [[nodiscard]] static std::vector<std::vector<unsigned char>> startOf(const GMBParameters &parameters)
     {
         return SqafVocab::startOf(SqafMoveMeta{.pan = parameters.target.pan(), .tilt = parameters.target.tilt()});
     }
-    [[nodiscard]] static QList<QByteArray> stopOf() { return SqafVocab::stopOf(); }
+    [[nodiscard]] static std::vector<std::vector<unsigned char>> stopOf() { return SqafVocab::stopOf(); }
 };
 using SqafCollector = TypedGMBCollector<SqafCollectorTag>;

@@ -1,3 +1,9 @@
+## 2026-11-17：命令集合使用 vector（用户定）
+
+startOf/stopOf 与 Collector 标签统一返回 std::vector<std::vector<unsigned char>>，官邸直接交 Device::send，删除原批次转换。原单条编码器保持；定位仍先水平后俯仰两包，点动和停机仍单包，字节、顺序与取消行为不变。
+
+不新增命令缓存或兼容包装。验证见主程序 docs/maintenance/validation.md；使用相邻源码覆盖，暂不推送。
+
 ## 2026-11-17：固定波特率使用整数（用户定）
 
 SqafConfig::baudRate 改为 constexpr int，值仍为 9600；serialParameters 直接使用该常量，删除 BaudRate 枚举依赖及转 int 的中转。数据位、停止位和校验配置不变，仍为 9600/8N1；文字输出、发送、重连和关闭保持。验证见 VALIDATION.md，暂不推送。

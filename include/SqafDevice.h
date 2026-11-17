@@ -290,12 +290,7 @@ private:
             Q_EMIT this->logMessage(std::format("转台运动参数超出本转台行程（水平 {}~{}°、俯仰 {}~{}°、速度 ≤ {}），未下发", SqafConfig::panMin, SqafConfig::panMax, SqafConfig::tiltMin, SqafConfig::tiltMax, SqafConfig::speedMax));
             return false;
         }
-        const auto commands = SqafVocab::startOf(meta);
-        std::vector<std::vector<unsigned char>> packets;
-        packets.reserve(static_cast<std::size_t>(commands.size()));
-        for (const auto &command : commands)
-            packets.emplace_back(command.cbegin(), command.cend());
-        return this->send(packets, {});
+        return this->send(SqafVocab::startOf(meta), {});
     }
 
     // 编号检查先于缩窄转换，非法输入不成帧。
