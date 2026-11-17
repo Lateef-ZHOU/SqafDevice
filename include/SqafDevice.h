@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <format>
 #include <QtQml/qqmlregistration.h>
 #include <algorithm>
@@ -44,8 +45,8 @@ class SqafDevice final
 #endif
 {
     Q_OBJECT
-    Q_PROPERTY(QString displayName MEMBER displayName CONSTANT)
-    Q_PROPERTY(QString subtitle MEMBER subtitle CONSTANT)
+    Q_PROPERTY(std::string displayName MEMBER displayName CONSTANT)
+    Q_PROPERTY(std::string subtitle MEMBER subtitle CONSTANT)
     Q_PROPERTY(bool isOpen READ isOpen)
     Q_PROPERTY(QVariant holder READ qmlHolder)
     Q_PROPERTY(WorldModel mounting READ mounting NOTIFY mountingChanged)
@@ -74,7 +75,7 @@ public:
 
     ~SqafDevice() override { PreDestruction(); }
 
-    explicit SqafDevice(QObject *parent) : GMBDevice(QStringLiteral("转台·亚安"), QStringLiteral("YS3081"), parent)
+    explicit SqafDevice(QObject *parent) : GMBDevice("转台·亚安", "YS3081", parent)
     {
         setObjectName(QStringLiteral("Sqaf")); // ASCII 标识：落盘会话目录名用
     }
