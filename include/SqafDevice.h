@@ -214,19 +214,45 @@ public Q_SLOTS:
     bool storePreset(const int preset)
     {
         if (!validPreset(preset)) return false;
-        return this->send({SqafVocab::buildSetPreset(static_cast<quint8>(preset))}, {});
+        const auto command = SqafVocab::buildSetPreset(static_cast<quint8>(preset));
+        return this->send({{command.cbegin(), command.cend()}}, {});
     }
     bool recallPreset(const int preset)
     {
         if (!validPreset(preset)) return false;
-        return this->send({SqafVocab::buildCallPreset(static_cast<quint8>(preset))}, {});
+        const auto command = SqafVocab::buildCallPreset(static_cast<quint8>(preset));
+        return this->send({{command.cbegin(), command.cend()}}, {});
     }
-    bool enableSelfCheck() { return this->send({SqafVocab::buildSelfCheckOn()}, {}); }
-    bool disableSelfCheck() { return this->send({SqafVocab::buildSelfCheckOff()}, {}); }
-    bool enableAngleRealtime() { return this->send({SqafVocab::buildAngleRealtimeOn()}, {}); }
-    bool setAngleQueryMode() { return this->send({SqafVocab::buildAngleQueryMode()}, {}); }
-    bool queryPan() { return this->send({SqafVocab::buildQueryPan()}, {}); }
-    bool queryTilt() { return this->send({SqafVocab::buildQueryTilt()}, {}); }
+    bool enableSelfCheck()
+    {
+        const auto command = SqafVocab::buildSelfCheckOn();
+        return this->send({{command.cbegin(), command.cend()}}, {});
+    }
+    bool disableSelfCheck()
+    {
+        const auto command = SqafVocab::buildSelfCheckOff();
+        return this->send({{command.cbegin(), command.cend()}}, {});
+    }
+    bool enableAngleRealtime()
+    {
+        const auto command = SqafVocab::buildAngleRealtimeOn();
+        return this->send({{command.cbegin(), command.cend()}}, {});
+    }
+    bool setAngleQueryMode()
+    {
+        const auto command = SqafVocab::buildAngleQueryMode();
+        return this->send({{command.cbegin(), command.cend()}}, {});
+    }
+    bool queryPan()
+    {
+        const auto command = SqafVocab::buildQueryPan();
+        return this->send({{command.cbegin(), command.cend()}}, {});
+    }
+    bool queryTilt()
+    {
+        const auto command = SqafVocab::buildQueryTilt();
+        return this->send({{command.cbegin(), command.cend()}}, {});
+    }
 
     // Qt 入口接收页面参数；成功只返回结果，文案由 QML 生成。标定三个角一次提交。
     bool issueGoTo(const double pan, const double tilt, const double panSpeed, const double tiltSpeed)
@@ -264,7 +290,12 @@ private:
             Q_EMIT this->logMessage(std::format("转台运动参数超出本转台行程（水平 {}~{}°、俯仰 {}~{}°、速度 ≤ {}），未下发", SqafConfig::panMin, SqafConfig::panMax, SqafConfig::tiltMin, SqafConfig::tiltMax, SqafConfig::speedMax));
             return false;
         }
-        return this->send(SqafVocab::startOf(meta), {});
+        const auto commands = SqafVocab::startOf(meta);
+        std::vector<std::vector<unsigned char>> packets;
+        packets.reserve(static_cast<std::size_t>(commands.size()));
+        for (const auto &command : commands)
+            packets.emplace_back(command.cbegin(), command.cend());
+        return this->send(packets, {});
     }
 
     // 编号检查先于缩窄转换，非法输入不成帧。
