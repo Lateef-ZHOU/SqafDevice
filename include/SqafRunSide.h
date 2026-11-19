@@ -197,6 +197,12 @@ class SqafCollector final : public GMBCollector
 {
 public:
     explicit SqafCollector(const GMBParameters &parameters)
-        : GMBCollector(parameters, SqafCollectorTag::tolerance, SqafCollectorTag::startOf(parameters),
-                       SqafCollectorTag::stopOf(), SqafCollectorTag::timeoutMs) {}
+        : GMBCollector(parameters, SqafCollectorTag::tolerance) {}
+
+    [[nodiscard]] std::vector<std::vector<unsigned char>> buildStart() const override
+    {
+        return SqafVocab::startOf(SqafMoveMeta{.pan = target.pan(), .tilt = target.tilt()});
+    }
+    [[nodiscard]] std::vector<std::vector<unsigned char>> buildStop() const override { return SqafVocab::stopOf(); }
+    [[nodiscard]] int timeoutMs() const override { return SqafCollectorTag::timeoutMs; }
 };
