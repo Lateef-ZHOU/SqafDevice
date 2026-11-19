@@ -193,4 +193,10 @@ struct SqafCollectorTag
     }
     [[nodiscard]] static std::vector<std::vector<unsigned char>> stopOf() { return SqafVocab::stopOf(); }
 };
-using SqafCollector = TypedGMBCollector<SqafCollectorTag>;
+class SqafCollector final : public GMBCollector
+{
+public:
+    explicit SqafCollector(const GMBParameters &parameters)
+        : GMBCollector(parameters, SqafCollectorTag::tolerance, SqafCollectorTag::startOf(parameters),
+                       SqafCollectorTag::stopOf(), SqafCollectorTag::timeoutMs) {}
+};
