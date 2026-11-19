@@ -117,6 +117,9 @@ public:
     }
 
 private:
+    // Device 要求的停机命令：无 run 时由官邸直接提供，不经 Collector。
+    [[nodiscard]] std::vector<std::vector<unsigned char>> stopCommands() const final { return SqafVocab::stopOf(); }
+
     void PreDestruction() noexcept final
     {
         static_assert(FinalDevice<SqafDevice, decltype(&SqafDevice::PreDestruction)>);
