@@ -134,17 +134,17 @@ private:
     }
 
 public:
-    // 型号判据（任务预验、造斗与直发共用）：本台角度定位协议不带速度，交出的参数去掉速度；
+    // 型号判据（任务预验、造斗与直发共用）：本台定位协议不编码速度，但请求仍携带两轴速度快照；
     // 位形拆成意图两数过行程检查（SqafVocab::withinTravel），越界返回空并记录原因。
     [[nodiscard]] std::optional<GMBParameters> paramsFor(const PanTiltModel &target, const std::chrono::milliseconds hold,
-        const std::optional<GMBParameters::Speeds> &) const override
+        const double panSpeed, const double tiltSpeed) const override
     {
         if (!SqafVocab::withinTravel(SqafMoveMeta{.pan = target.pan(), .tilt = target.tilt()}))
         {
             Q_EMIT this->logMessage(std::format("转台目标（水平 {:.2f}°、俯仰 {:.2f}°）超出本转台行程，未下发", target.pan(), target.tilt()));
             return std::nullopt;
         }
-        return GMBParameters(*this, target, hold, std::nullopt);
+        return GMBParameters(*this, target, hold, panSpeed, tiltSpeed);
     }
 
 private:
