@@ -1,5 +1,6 @@
 #pragma once
 #include <numeric>
+#include <span>
 #include <QByteArray>
 #include <QtGlobal>
 
@@ -18,11 +19,11 @@ public:
     }
 
     // 检查首个七字节帧的帧头与校验和；不足一帧时拒绝，成帧器逐窗调用。
-    [[nodiscard]] static bool kindOf(const QByteArray &frame)
+    [[nodiscard]] static bool kindOf(std::span<const unsigned char> frame)
     {
         if (frame.size() < Size)
             return false;
-        const auto *p = reinterpret_cast<const quint8 *>(frame.constData());
+        const auto *p = frame.data();
         return p[0] == Sync && p[6] == (std::accumulate(p + 1, p + 6, 0u) & 0xFF);
     }
 

@@ -6,8 +6,8 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <span>
 #include <vector>
-#include <QByteArray>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -154,11 +154,11 @@ private:
     // 型号一字不差。
     // 上抛的是**完整 7 字节 Pelco 帧**（PelcoDHandle::onRX 做帧头 / 长度 / 校验和三判，不剥
     // 信封）：p[3] 取应答帧型、p[4..5] 取大端码值——解码走 SqafVocab。
-    [[nodiscard]] std::optional<PanTiltModel> decodeStream(const QByteArray &raw) override
+    [[nodiscard]] std::optional<PanTiltModel> decodeStream(std::span<const unsigned char> raw) override
     {
         if (raw.size() < PelcoFrame::Size)
             return std::nullopt; // 短于一帧：不认（正常路径上抛恒是整帧，此判为防御）
-        const auto *p = reinterpret_cast<const quint8 *>(raw.constData());
+        const auto *p = raw.data();
         const quint16 code = qFromBigEndian<quint16>(p + 4);
         switch (static_cast<SqafVocab::RxFrame>(p[3]))
         {

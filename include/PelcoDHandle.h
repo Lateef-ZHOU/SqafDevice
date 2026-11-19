@@ -31,8 +31,8 @@ protected:
             bytes_.push_back({static_cast<char>(byte), at});
         while (bytes_.size() >= PelcoFrame::Size) {
             for (int i = 0; i < PelcoFrame::Size; ++i)
-                frame_[i] = bytes_[i].value;
-            if (!PelcoFrame::kindOf(QByteArray::fromRawData(frame_.data(), PelcoFrame::Size))) {
+                frame_[i] = static_cast<unsigned char>(bytes_[i].value);
+            if (!PelcoFrame::kindOf(std::span<const unsigned char>(frame_.data(), frame_.size()))) {
                 bytes_.pop_front();
                 continue;
             }
@@ -53,7 +53,7 @@ private:
     // frame_ 为同步上传提供连续存储；下一次 onRX 前不会改变。
     // 六字节尾部加最多三字节输入，解析前不得覆盖旧字节。
     boost::circular_buffer<StampedByte> bytes_{PelcoFrame::Size + PelcoFrame::Size / 2 - 1};
-    std::array<char, PelcoFrame::Size> frame_{};
+    std::array<unsigned char, PelcoFrame::Size> frame_{};
 
     [[nodiscard]] TXRuling onTX(const std::vector<unsigned char> &payload, std::shared_ptr<SerialConn>) const override
     {
